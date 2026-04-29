@@ -63,6 +63,7 @@
                                 <option value="">اختر الفئة</option>
                                 <option value="real">عقارات</option>
                                 <option value="elec">إلكترونيات</option>
+                                <option value="elec_appliances">كهربائيات</option>
                                 <option value="fashion">ملابس</option>
                                 <option value="home">أثاث</option>
                                 <option value="cars">سيارات</option>
@@ -100,15 +101,15 @@
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                             <label class="flex items-center justify-center gap-2 p-3 bg-gray-50 rounded-2xl border border-gray-100 cursor-pointer hover:bg-white hover:border-blue-200 transition-all">
                                 <input type="checkbox" checked class="w-4 h-4 rounded text-blue-600">
-                                <span class="text-xs font-bold">شات</span>
+                                <span class="text-xs font-bold text-gray-700">شات</span>
                             </label>
                             <label class="flex items-center justify-center gap-2 p-3 bg-gray-50 rounded-2xl border border-gray-100 cursor-pointer hover:bg-white hover:border-blue-200 transition-all">
                                 <input type="checkbox" checked class="w-4 h-4 rounded text-blue-600">
-                                <span class="text-xs font-bold">اتصال</span>
+                                <span class="text-xs font-bold text-gray-700">اتصال</span>
                             </label>
                             <label class="flex items-center justify-center gap-2 p-3 bg-gray-50 rounded-2xl border border-gray-100 cursor-pointer hover:bg-white hover:border-blue-200 transition-all">
                                 <input type="checkbox" class="w-4 h-4 rounded text-blue-600">
-                                <span class="text-xs font-bold">واتساب</span>
+                                <span class="text-xs font-bold text-gray-700">واتساب</span>
                             </label>
                         </div>
                     </div>
@@ -124,7 +125,7 @@
     <div id="success-modal" class="fixed inset-0 z-[1000] bg-black/60 hidden items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-white rounded-3xl p-8 max-w-sm w-full text-center space-y-6 animate-in zoom-in duration-300">
             <div class="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-4xl mx-auto">✓</div>
-            <h3 class="text-xl font-black text-gray-800">تم الحفظ في Supabase بنجاح!</h3>
+            <h3 class="text-xl font-black">تم الحفظ في Supabase بنجاح!</h3>
             <button onclick="window.location.href='index.html'" class="w-full bg-gray-900 text-white py-4 rounded-2xl font-black text-sm">العودة للرئيسية</button>
         </div>
     </div>
@@ -135,7 +136,8 @@
         // خيارات الفئات الفرعية المحدثة كما طلبت
         const subCategories = {
             'real': ['شراء', 'استئجار', 'أرض', 'شاليهات', 'فيلة'],
-            'elec': ['هواتف', 'حاسوب ولابتوب', 'أدوات منزلية'],
+            'elec': ['موبايلات وهواتف', 'حواسيب', 'لابتوب', 'اجهزة اخرى'],
+            'elec_appliances': ['كهربائيات المطبخ', 'تلفزيون', 'ثلاجه', 'غسالة', 'تكييف', 'اجهزة اخرى'],
             'fashion': ['رجالي', 'نسائي', 'أطفال', 'أحذية', 'ساعات وإكسسوارات', 'مكياج'],
             'home': ['صالون', 'مطبخ', 'غرفة نوم', 'حديقة'],
             'cars': ['سيارات مستعملة', 'سيارات جديدة', 'موتوسيكلات', 'قطع غيار']
@@ -145,7 +147,6 @@
         const subContainer = document.getElementById('sub-category-container');
         const subSelect = document.getElementById('sub-category');
 
-        // وظيفة تحديث الفئات الفرعية
         mainCatSelect.addEventListener('change', () => {
             const mainCat = mainCatSelect.value;
             if (mainCat && subCategories[mainCat]) {
