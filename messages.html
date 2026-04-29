@@ -12,9 +12,9 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .chat-container { height: calc(100vh - 120px); }
         @media (max-width: 768px) { .chat-container { height: calc(100vh - 80px); } }
-        .msg-bubble { max-width: 80%; word-wrap: break-word; }
-        .conv-item { transition: transform 0.2s; -webkit-user-select: none; user-select: none; }
-        .conv-item:active { transform: scale(0.98); background-color: #f1f5f9; }
+        .msg-bubble { max-width: 85%; word-wrap: break-word; }
+        .conv-item { transition: all 0.2s; }
+        .conv-item:active { background-color: #f1f5f9; }
         .unread-dot { width: 10px; height: 10px; background-color: #2563eb; border-radius: 50%; border: 2px solid white; }
     </style>
 </head>
@@ -37,7 +37,6 @@
             <div id="conv-list" class="w-full md:w-96 border-l border-gray-100 flex flex-col bg-gray-50/30">
                 <div class="p-6 bg-white border-b flex justify-between items-center">
                     <h2 class="text-xl font-black text-gray-800">الرسائل</h2>
-                    <span class="text-[10px] text-gray-400 font-bold italic">اضغط مطولاً للحذف</span>
                 </div>
                 <div id="conversations-container" class="flex-1 overflow-y-auto no-scrollbar">
                     <div class="p-10 text-center text-gray-400 text-xs font-bold italic">جاري تحميل المحادثات...</div>
@@ -58,9 +57,9 @@
                 </div>
 
                 <!-- Ad Context Bar -->
-                <div id="ad-context-bar" class="hidden bg-gray-50 p-2 px-4 border-b flex items-center gap-3">
+                <div id="ad-context-bar" class="hidden bg-blue-50/50 p-2 px-4 border-b flex items-center gap-3">
                     <img id="ad-context-img" src="" class="w-10 h-10 rounded-lg object-cover border border-white shadow-sm bg-white">
-                    <div class="flex-1">
+                    <div class="flex-1 overflow-hidden">
                         <h4 id="ad-context-title" class="text-[10px] font-black text-gray-700 truncate">اسم الإعلان</h4>
                         <p id="ad-context-price" class="text-[9px] font-bold text-blue-600 mt-0.5">0 ج.م</p>
                     </div>
@@ -88,19 +87,20 @@
     </main>
 
     <script type="module">
-        import { db, collection, addDoc, query, orderBy, onSnapshot, where, serverTimestamp, doc, updateDoc, arrayUnion, getDoc } from "./firebase-config.js";
+        import { db, collection, addDoc, query, orderBy, onSnapshot, where, serverTimestamp, doc, updateDoc, getDoc, getDocs } from "./firebase-config.js";
 
         const user = JSON.parse(localStorage.getItem('user'));
         if (!user) window.location.href = 'login.html';
 
         if (Notification.permission === "default") { Notification.requestPermission(); }
-
         document.getElementById('current-user-avatar').innerText = (user.name || user.email).charAt(0).toUpperCase();
 
         let currentChatId = null;
         let unsubMessages = null;
+        const adsDataCache = new Map();
 
         window.openChat = async function(chatId, otherPartyEmail, adInfo = null) {
+            console.log("Opening Chat:", chatId);
             if (unsubMessages) unsubMessages();
             currentChatId = chatId;
 
@@ -108,16 +108,20 @@
             document.getElementById('active-user-name').innerText = name;
             document.getElementById('active-user-avatar').innerText = name.charAt(0).toUpperCase();
 
+            // Handle UI for Ad Context
             const adBar = document.getElementById('ad-context-bar');
-            if (adInfo && adInfo.img) {
+            const targetAd = adInfo || adsDataCache.get(chatId);
+
+            if (targetAd && targetAd.img) {
                 adBar.classList.remove('hidden');
-                document.getElementById('ad-context-img').src = adInfo.img;
-                document.getElementById('ad-context-title').innerText = adInfo.title;
-                document.getElementById('ad-context-price').innerText = adInfo.price + " ج.م";
+                document.getElementById('ad-context-img').src = targetAd.img;
+                document.getElementById('ad-context-title').innerText = targetAd.title;
+                document.getElementById('ad-context-price').innerText = targetAd.price + " ج.م";
             } else {
                 adBar.classList.add('hidden');
             }
 
+            // UI Switching
             if (window.innerWidth < 768) {
                 document.getElementById('conv-list').classList.add('hidden');
                 document.getElementById('main-header').classList.add('hidden');
@@ -132,7 +136,7 @@
             const userKey = user.email.replace(/\./g, '_');
             try {
                 await updateDoc(doc(db, "chats", chatId), { [`unreadCount.${userKey}`]: 0 });
-            } catch(e) {}
+            } catch(e) { console.error("Error marking as read:", e); }
         };
 
         window.backToList = function() {
@@ -141,6 +145,7 @@
             document.getElementById('chat-window').classList.add('hidden');
             document.getElementById('chat-window').classList.remove('flex');
             currentChatId = null;
+            if (unsubMessages) unsubMessages();
         };
 
         function loadMessages(chatId) {
@@ -176,16 +181,20 @@
             try {
                 const chatRef = doc(db, "chats", currentChatId);
                 const chatSnap = await getDoc(chatRef);
+                if (!chatSnap.exists()) throw new Error("المحادثة غير موجودة");
+
                 const chatData = chatSnap.data();
                 const otherEmail = chatData.participants.find(p => p !== user.email);
                 const otherKey = otherEmail.replace(/\./g, '_');
 
+                // 1. Add Message
                 await addDoc(collection(db, "chats", currentChatId, "messages"), {
                     text: text,
                     sender: user.email,
                     timestamp: serverTimestamp()
                 });
 
+                // 2. Update Chat
                 await updateDoc(chatRef, {
                     hiddenFor: [],
                     lastMessage: text,
@@ -194,7 +203,7 @@
                 });
             } catch (err) {
                 console.error("Send error:", err);
-                alert("خطأ في الإرسال");
+                alert("فشل في إرسال الرسالة");
                 input.value = text;
             } finally {
                 sendBtn.disabled = false;
@@ -202,7 +211,9 @@
         });
 
         function fetchConversations() {
+            // Important: We sort by lastMessageTime to show newest first
             const q = query(collection(db, "chats"), where("participants", "array-contains", user.email), orderBy("lastMessageTime", "desc"));
+
             onSnapshot(q, (snapshot) => {
                 const container = document.getElementById('conversations-container');
                 container.innerHTML = snapshot.empty ? '<div class="p-10 text-center text-gray-400 text-xs font-bold">لا توجد محادثات</div>' : '';
@@ -212,6 +223,8 @@
                     if (chat.hiddenFor && chat.hiddenFor.includes(user.email)) return;
 
                     const otherEmail = chat.participants.find(e => e !== user.email);
+                    if (!otherEmail) return;
+
                     const name = otherEmail.split('@')[0];
                     const userKey = user.email.replace(/\./g, '_');
                     const unread = chat.unreadCount?.[userKey] || 0;
@@ -220,62 +233,72 @@
                         showBrowserNotification(name, chat.lastMessage);
                     }
 
+                    // Cache ad data for openChat
+                    if (chat.lastAd) adsDataCache.set(docSnap.id, chat.lastAd);
+
                     const adImg = chat.lastAd?.img || '';
                     const avatar = adImg
                         ? `<img src="${adImg}" class="w-12 h-12 rounded-2xl object-cover border shadow-sm">`
                         : `<div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center font-black text-lg">${name.charAt(0).toUpperCase()}</div>`;
 
-                    container.insertAdjacentHTML('beforeend', `
-                        <div onclick='openChat("${docSnap.id}", "${otherEmail}", ${JSON.stringify(chat.lastAd)})'
-                             class="conv-item p-5 flex items-center gap-4 cursor-pointer hover:bg-white transition-all border-b border-gray-50 ${currentChatId === docSnap.id ? 'bg-white border-r-4 border-r-blue-600' : ''}">
-                            <div class="relative">${avatar}${unread > 0 ? '<div class="absolute -top-1 -right-1 unread-dot"></div>' : ''}</div>
-                            <div class="flex-1 overflow-hidden">
-                                <div class="flex justify-between items-center">
-                                    <h4 class="font-black text-sm text-gray-800">${name}</h4>
-                                    ${unread > 0 ? `<span class="bg-blue-600 text-white text-[8px] px-1.5 py-0.5 rounded-full">${unread}</span>` : ''}
-                                </div>
-                                <p class="text-[10px] text-gray-400 truncate">${chat.lastMessage || 'محادثة جديدة'}</p>
+                    const item = document.createElement('div');
+                    item.className = `conv-item p-5 flex items-center gap-4 cursor-pointer hover:bg-white border-b border-gray-50 ${currentChatId === docSnap.id ? 'bg-white border-r-4 border-r-blue-600' : ''}`;
+                    item.onclick = () => window.openChat(docSnap.id, otherEmail);
+                    item.innerHTML = `
+                        <div class="relative">${avatar}${unread > 0 ? '<div class="absolute -top-1 -right-1 unread-dot"></div>' : ''}</div>
+                        <div class="flex-1 overflow-hidden">
+                            <div class="flex justify-between items-center">
+                                <h4 class="font-black text-sm text-gray-800">${name}</h4>
+                                ${unread > 0 ? `<span class="bg-blue-600 text-white text-[8px] px-1.5 py-0.5 rounded-full">${unread}</span>` : ''}
                             </div>
-                        </div>`);
+                            <p class="text-[10px] text-gray-400 truncate">${chat.lastMessage || 'بدء محادثة جديدة...'}</p>
+                        </div>`;
+                    container.appendChild(item);
                 });
+            }, (error) => {
+                console.error("Conversations sync error:", error);
             });
         }
 
         function showBrowserNotification(sender, text) {
             if (Notification.permission === "granted") {
-                new Notification("رسالة من " + sender, { body: text });
+                new Notification("روبابيكيا: رسالة من " + sender, { body: text });
             }
         }
 
         async function checkIncomingChat() {
             const params = new URLSearchParams(window.location.search);
             const sellerEmail = params.get('seller');
-            if (sellerEmail && sellerEmail !== user.email) {
-                const adData = params.get('ad') ? {
-                    title: params.get('ad'),
-                    img: params.get('img'),
-                    price: params.get('price'),
-                    id: params.get('adId')
-                } : null;
+            if (!sellerEmail || sellerEmail === user.email) return;
 
-                const q = query(collection(db, "chats"), where("participants", "array-contains", user.email));
-                onSnapshot(q, async (snap) => {
-                    let chat = snap.docs.find(d => d.data().participants.includes(sellerEmail));
-                    if (chat) {
-                        if (adData) await updateDoc(doc(db, "chats", chat.id), { lastAd: adData, hiddenFor: [] });
-                        openChat(chat.id, sellerEmail, adData || chat.data().lastAd);
-                    } else {
-                        const newC = await addDoc(collection(db, "chats"), {
-                            participants: [user.email, sellerEmail],
-                            lastAd: adData,
-                            createdAt: serverTimestamp(),
-                            lastMessage: "",
-                            lastMessageTime: serverTimestamp(),
-                            unreadCount: {}
-                        });
-                        openChat(newC.id, sellerEmail, adData);
-                    }
-                }, { once: true });
+            const adData = params.get('ad') ? {
+                title: params.get('ad'),
+                img: params.get('img'),
+                price: params.get('price'),
+                id: params.get('adId')
+            } : null;
+
+            // Search for existing chat
+            const q = query(collection(db, "chats"), where("participants", "array-contains", user.email));
+            const snap = await getDocs(q);
+            let existingChat = snap.docs.find(d => d.data().participants.includes(sellerEmail));
+
+            if (existingChat) {
+                if (adData) {
+                    await updateDoc(doc(db, "chats", existingChat.id), { lastAd: adData, hiddenFor: [] });
+                }
+                window.openChat(existingChat.id, sellerEmail, adData || existingChat.data().lastAd);
+            } else {
+                const newC = await addDoc(collection(db, "chats"), {
+                    participants: [user.email, sellerEmail],
+                    lastAd: adData,
+                    createdAt: serverTimestamp(),
+                    lastMessage: "",
+                    lastMessageTime: serverTimestamp(),
+                    unreadCount: {},
+                    hiddenFor: []
+                });
+                window.openChat(newC.id, sellerEmail, adData);
             }
         }
 
