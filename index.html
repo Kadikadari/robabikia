@@ -74,9 +74,7 @@
             </div>
             <div class="p-4">
                 <input type="text" id="location-search-input" placeholder="ابحث عن مدينة، مركز أو محافظة..." oninput="filterLocations()">
-                <div id="location-list" class="max-h-[350px] overflow-y-auto p-2 space-y-1 no-scrollbar">
-                    <!-- سيتم ملء المواقع برمجياً -->
-                </div>
+                <div id="location-list" class="max-h-[350px] overflow-y-auto p-2 no-scrollbar"></div>
             </div>
         </div>
     </div>
@@ -106,7 +104,7 @@
         </div>
     </header>
 
-    <!-- Navigation -->
+    <!-- Navigation Area -->
     <nav class="bg-white border-b sticky top-[65px] z-[900]">
         <div class="container mx-auto px-4">
             <div class="no-scrollbar flex items-center justify-start md:justify-center gap-4 py-3 overflow-x-auto whitespace-nowrap">
@@ -115,7 +113,7 @@
                 <button onclick="toggleSub('elec', this, 'الإلكترونيات')" class="cat-btn flex flex-col items-center p-2 min-w-[75px] rounded-2xl border border-transparent transition-all"><span class="text-xl">📱</span><span class="text-[10px] font-black mt-1">إلكترونيات</span></button>
                 <button onclick="toggleSub('elec_appliances', this, 'الكهربائيات')" class="cat-btn flex flex-col items-center p-2 min-w-[75px] rounded-2xl border border-transparent transition-all"><span class="text-xl">⚡</span><span class="text-[10px] font-bold mt-1">كهربائيات</span></button>
                 <button onclick="toggleSub('fashion', this, 'الملابس')" class="cat-btn flex flex-col items-center p-2 min-w-[75px] rounded-2xl border border-transparent transition-all"><span class="text-xl">👕</span><span class="text-[10px] font-black mt-1">ملابس</span></button>
-                <button onclick="toggleSub('home', this, 'الأثاث')" class="cat-btn flex flex-col items-center p-2 min-w-[75px] rounded-2xl border border-transparent transition-all"><span class="text-xl"> Couch 🛋️</span><span class="text-[10px] font-black mt-1">أثاث</span></button>
+                <button onclick="toggleSub('home', this, 'الأثاث')" class="cat-btn flex flex-col items-center p-2 min-w-[75px] rounded-2xl border border-transparent transition-all"><span class="text-xl">🛋️</span><span class="text-[10px] font-black mt-1">أثاث</span></button>
             </div>
         </div>
         <div id="sub-menu-bar" class="bg-blue-50 border-t border-blue-100">
@@ -124,19 +122,23 @@
     </nav>
 
     <main class="container mx-auto px-4 py-8">
-        <div id="ads-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-6"></div>
+        <div id="ads-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-6">
+            <div class="col-span-full py-20 text-center text-gray-400 font-bold italic">جاري تحميل أحدث الإعلانات...</div>
+        </div>
     </main>
 
-    <!-- Bottom Navigation -->
-    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 flex items-center justify-around py-3 px-2 z-[2000] shadow-[0_-5px_20px_rgba(0,0,0,0.05)]">
+    <!-- Bottom Nav -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 flex items-center justify-around py-3 px-2 z-[2000] shadow-lg">
         <a href="index.html" class="bottom-nav-item active flex flex-col items-center gap-1 text-blue-600"><span>🏠</span><span class="text-[9px] font-black">الرئيسية</span></a>
         <a href="favorites.html" class="flex flex-col items-center gap-1 text-gray-400"><span>❤</span><span class="text-[9px] font-black">المفضلة</span></a>
-        <a href="add-ad.html" id="mobile-add-btn" class="flex flex-col items-center -mt-8 bg-blue-600 text-white w-14 h-14 rounded-full border-4 border-gray-50 flex items-center justify-center shadow-lg active:scale-90 transition-all"><span class="text-2xl font-bold">+</span></a>
+        <a href="add-ad.html" class="flex flex-col items-center -mt-8 bg-blue-600 text-white w-14 h-14 rounded-full border-4 border-gray-50 flex items-center justify-center shadow-lg active:scale-90 transition-all"><span class="text-2xl font-bold">+</span></a>
         <a href="messages.html" class="bottom-nav-item flex flex-col items-center gap-1 text-gray-400"><span>💬</span><span class="text-[9px] font-black">الرسائل</span></a>
         <a href="login.html" id="mobile-account-link" class="bottom-nav-item flex flex-col items-center gap-1 text-gray-400"><span>👤</span><span class="text-[9px] font-black">حسابي</span></a>
     </nav>
 
-    <script>
+    <script type="module">
+        import { supabase } from "./supabase-config.js";
+
         const subData = {
             'real': ['شراء', 'استئجار', 'أرض', 'شاليهات', 'فيلة'],
             'elec': ['موبايلات وهواتف', 'حواسيب', 'لابتوب', 'اجهزة اخرى'],
@@ -147,117 +149,96 @@
         };
 
         const egyptLocations = [
-            "كل مصر",
-            "القاهرة - مدينة نصر", "القاهرة - التجمع الخامس", "القاهرة - مصر الجديدة", "القاهرة - المعادي", "القاهرة - الرحاب", "القاهرة - مدينتي", "القاهرة - الشروق", "القاهرة - العبور", "القاهرة - حلوان", "القاهرة - المقطم", "القاهرة - الزمالك", "القاهرة - وسط البلد", "القاهرة - شبرا", "القاهرة - عين شمس", "القاهرة - المطرية", "القاهرة - المرج", "القاهرة - حدائق القبة", "القاهرة - الزيتون", "القاهرة - الوايلي", "القاهرة - عابدين", "القاهرة - السيدة زينب", "القاهرة - منشأة ناصر", "القاهرة - بدر", "القاهرة - 15 مايو",
-            "الجيزة - 6 أكتوبر", "الجيزة - الشيخ زايد", "الجيزة - الهرم", "الجيزة - فيصل", "الجيزة - المهندسين", "الجيزة - الدقي", "الجيزة - إمبابة", "الجيزة - الوراق", "الجيزة - بولاق الدكرور", "الجيزة - العمرانية", "الجيزة - الحوامدية", "الجيزة - البدرشين", "الجيزة - العياط", "الجيزة - أطفيح", "الجيزة - الصف", "الجيزة - الواحات البحرية", "الجيزة - كرداسة", "الجيزة - أوسيم",
-            "الإسكندرية - سموحة", "الإسكندرية - ميامي", "الإسكندرية - سيدي بشر", "الإسكندرية - العجمي", "الإسكندرية - المنتزة", "الإسكندرية - لوران", "الإسكندرية - جليم", "الإسكندرية - الشاطبي", "الإسكندرية - محرم بك", "الإسكندرية - العصافرة", "الإسكندرية - السيوف", "الإسكندرية - سيدي جابر", "الإسكندرية - الإبراهيمية", "الإسكندرية - البيطاش", "الإسكندرية - برج العرب", "الإسكندرية - العامرية", "الإسكندرية - كفر عبده", "الإسكندرية - رشدي", "الإسكندرية - ستانلي",
-            "القليوبية - بنها", "القليوبية - شبرا الخيمة", "القليوبية - قليوب", "القليوبية - الخانكة", "القليوبية - طوخ", "القليوبية - قها", "القليوبية - كفر شكر", "القليوبية - شبين القناطر", "القليوبية - القناطر الخيرية", "القليوبية - الخصوص", "القليوبية - العبور الجديدة",
-            "الدقهلية - المنصورة", "الدقهلية - طلخا", "الدقهلية - ميت غمر", "الدقهلية - السنبلاوين", "الدقهلية - دكرنس", "الدقهلية - شربين", "الدقهلية - بلقاس", "الدقهلية - منية النصر", "الدقهلية - أجا", "الدقهلية - المطرية (الدقهلية)", "الدقهلية - الجمالية", "الدقهلية - تمي الأمديد", "الدقهلية - بني عبيد", "الدقهلية - نبروه", "الدقهلية - جمصة",
-            "الشرقية - الزقازيق", "الشرقية - العاشر من رمضان", "الشرقية - بلبيس", "الشرقية - منيا القمح", "الشرقية - فاقوس", "الشرقية - أبو حماد", "الشرقية - ديرب نجم", "الشرقية - كفر صقر", "الشرقية - أولاد صقر", "الشرقية - الحسينية", "الشرقية - مشتول السوق", "الشرقية - القنايات", "الشرقية - القرين", "الشرقية - صان الحجر", "الشرقية - الإبراهيمية (الشرقية)", "الشرقية - أبو كبير",
-            "الغربية - طنطا", "الغربية - المحلة الكبرى", "الغربية - كفر الزيات", "الغربية - زفتى", "الغربية - بسيون", "الغربية - قطور", "الغربية - سمنود", "الغربية - السنطة",
-            "المنوفية - شبين الكوم", "المنوفية - قويسنا", "المنوفية - أشمون", "المنوفية - منوف", "المنوفية - مدينة السادات", "المنوفية - الباجور", "المنوفية - بركة السبع", "المنوفية - تلا", "المنوفية - الشهداء", "المنوفية - سرس الليان",
-            "البحيرة - دمنهور", "البحيرة - كفر الدوار", "البحيرة - رشيد", "البحيرة - إدكو", "البحيرة - أبو حمص", "البحيرة - حوش عيسى", "البحيرة - أبو المطامير", "البحيرة - إيتاي البارود", "البحيرة - كوم حمادة", "البحيرة - الدلنجات", "البحيرة - محمودية", "البحيرة - وادي النطرون", "البحيرة - بدر", "البحيرة - الرحمانية",
-            "دمياط - دمياط", "دمياط - دمياط الجديدة", "دمياط - رأس البر", "دمياط - فارسكور", "دمياط - الزرقا", "دمياط - السرو", "دمياط - الروضة", "دمياط - عزبة البرج", "دمياط - ميت أبو غالب", "دمياط - كفر البطيخ",
-            "كفر الشيخ - كفر الشيخ", "كفر الشيخ - دسوق", "كفر الشيخ - فوه", "كفر الشيخ - مطوبس", "كفر الشيخ - قلين", "كفر الشيخ - سيدي سالم", "كفر الشيخ - الرياض", "كفر الشيخ - الحامول", "كفر الشيخ - بيلا", "كفر الشيخ - بلطيم", "كفر الشيخ - مصيف بلطيم", "كفر الشيخ - سيدي غازي",
-            "بور سعيد - بورسعيد", "بورسعيد - بورفؤاد",
-            "الإسماعيلية - الإسماعيلية", "الإسماعيلية - التل الكبير", "الإسماعيلية - فايد", "الإسماعيلية - القنطرة شرق", "الإسماعيلية - القنطرة غرب", "الإسماعيلية - أبو صوير", "الإسماعيلية - القصاصين",
-            "السويس - السويس", "السويس - حي الأربعين", "السويس - حي الجناين", "السويس - حي فيصل", "السويس - حي السويس", "السويس - حي عتاقة",
-            "الفيوم - الفيوم", "الفيوم - الفيوم الجديدة", "الفيوم - طامية", "الفيوم - سنورس", "الفيوم - إطسا", "الفيوم - أبشواي", "الفيوم - يوسف الصديق",
-            "بني سويف - بني سويف", "بني سويف - بني سويف الجديدة", "بني سويف - الواسطى", "بني سويف - ناصر", "بني سويف - الفشن", "بني سويف - ببا", "بني سويف - سمسطا", "بني سويف - اهناسيا",
-            "المنيا - المنيا", "المنيا - المنيا الجديدة", "المنيا - مغاغة", "المنيا - بني مزار", "المنيا - مطاي", "المنيا - سمالوط", "المنيا - أبو قرقاص", "المنيا - ملوي", "المنيا - دير مواس", "المنيا - العدوة",
-            "أسيوط - أسيوط", "أسيوط - أسيوط الجديدة", "أسيوط - ديروط", "أسيوط - منفلوط", "أسيوط - القوصية", "أسيوط - أبنوب", "أسيوط - أبو تيج", "أسيوط - الغنايم", "أسيوط - ساحل سليم", "أسيوط - البداري", "أسيوط - صدفا", "أسيوط - الفتح", "أسيوط - البداري",
-            "سوهاج - سوهاج", "سوهاج - سوهاج الجديدة", "سوهاج - أخميم", "سوهاج - طهطا", "سوهاج - طما", "سوهاج - جرجا", "سوهاج - المنشأة", "سوهاج - المراغة", "سوهاج - البلينا", "سوهاج - دار السلام", "سوهاج - جهينة", "سوهاج - ساقلته",
-            "قنا - قنا", "قنا - قنا الجديدة", "قنا - نجع حمادي", "قنا - دشنا", "قنا - قوص", "قنا - قفط", "قنا - نقادة", "قنا - فرشوط", "قنا - أبو تشت", "قنا - الوقف",
-            "الأقصر - الأقصر", "الأقصر - الأقصر الجديدة", "الأقصر - طيبة الجديدة", "الأقصر - إسنا", "الأقصر - أرمنت", "الأقصر - القرنة", "الأقصر - البياضية", "الأقصر - الطود",
-            "أسوان - أسوان", "أسوان - أسوان الجديدة", "أسوان - دراو", "أسوان - كوم أمبو", "أسوان - إدفو", "أسوان - نصر النوبة", "أسوان - كلابشة", "أسوان - الرديسية", "أسوان - البصيلية", "أسوان - السباعية", "أسوان - أبو سمبل السياحية",
-            "البحر الأحمر - الغردقة", "البحر الأحمر - رأس غارب", "البحر الأحمر - سفاجا", "البحر الأحمر - القصير", "البحر الأحمر - مرسى علم", "البحر الأحمر - شلاتين", "البحر الأحمر - حلايب",
-            "الوادي الجديد - الخارجة", "الوادي الجديد - الداخلة", "الوادي الجديد - الفرافرة", "الوادي الجديد - باريس", "الوادي الجديد - بلاط",
-            "مطروح - مرسى مطروح", "مطروح - الحمام", "مطروح - العلمين", "مطروح - الضبعة", "مطروح - سيوة", "مطروح - النجيلة", "مطروح - براني", "مطروح - السلوم",
-            "شمال سيناء - العريش", "شمال سيناء - الشيخ زايد", "شمال سيناء - رفح", "شمال سيناء - بئر العبد", "شمال سيناء - الحسنة", "شمال سيناء - نخل",
-            "جنوب سيناء - طور سيناء", "جنوب سيناء - شرم الشيخ", "جنوب سيناء - دهب", "جنوب سيناء - نويبع", "جنوب سيناء - طابا", "جنوب سيناء - سانت كاترين", "جنوب سيناء - رأس سدر", "جنوب سيناء - أبو رديس", "جنوب سيناء - أبو زنيمة"
+            "كل مصر", "القاهرة - مدينة نصر", "القاهرة - التجمع الخامس", "القاهرة - مصر الجديدة", "القاهرة - المعادي", "الجيزة - 6 أكتوبر", "الجيزة - الشيخ زايد", "الجيزة - الهرم", "الإسكندرية - سموحة", "الدقهلية - المنصورة", "الغربية - طنطا", "الشرقية - الزقازيق"
         ];
 
-        let lastKey = '';
-        function toggleSub(key, btn, name) {
-            const bar = document.getElementById('sub-menu-bar');
-            const content = document.getElementById('sub-content');
-            if (lastKey === key) { bar.style.display = 'none'; btn.classList.remove('active'); lastKey = ''; return; }
-            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active');
-            content.innerHTML = `<a href="#" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-[11px] font-bold shadow-md">الكل في ${name}</a>` + subData[key].map(opt => `<a href="#" class="bg-white px-4 py-2 rounded-xl text-[11px] font-bold text-gray-700 shadow-sm border border-gray-100 hover:border-blue-500 transition-all">${opt}</a>`).join('');
-            bar.style.display = 'block'; lastKey = key;
-        }
+        let fetchedAds = [];
 
-        function toggleUserMenu(e) { e.stopPropagation(); document.getElementById('user-menu').classList.toggle('active'); }
-        function logout() { localStorage.removeItem('user'); window.location.reload(); }
-
-        function toggleLocationModal() {
-            const m = document.getElementById('location-modal');
-            m.classList.toggle('hidden');
-            m.style.display = m.classList.contains('hidden') ? 'none' : 'flex';
-            if(!m.classList.contains('hidden')) {
-                document.getElementById('location-search-input').value = '';
-                renderLocations(egyptLocations);
-                setTimeout(() => document.getElementById('location-search-input').focus(), 100);
+        async function fetchRealAds() {
+            try {
+                const { data, error } = await supabase.from('ads').select('*').order('created_at', { ascending: false });
+                if (error) throw error;
+                fetchedAds = data;
+                renderAds(data);
+            } catch (err) {
+                console.error("Error fetching ads:", err);
+                document.getElementById('ads-grid').innerHTML = '<div class="col-span-full py-10 text-center text-red-400 font-bold">خطأ في جلب البيانات</div>';
             }
         }
 
-        function renderLocations(locations) {
-            const list = document.getElementById('location-list');
-            list.innerHTML = locations.map(loc => `<div onclick="selectLocation('${loc}')" class="p-3 hover:bg-blue-50 rounded-xl cursor-pointer font-bold text-sm text-gray-700 transition-all border-b border-gray-50 last:border-0 text-right">📍 ${loc}</div>`).join('');
-        }
-
-        function filterLocations() {
-            const query = document.getElementById('location-search-input').value.toLowerCase();
-            const filtered = egyptLocations.filter(loc => loc.toLowerCase().includes(query));
-            renderLocations(filtered);
-        }
-
-        function selectLocation(loc) {
-            document.getElementById('current-location').innerText = loc;
-            document.getElementById('location-title').innerText = loc === 'كل مصر' ? 'مصر' : loc;
-            toggleLocationModal();
-        }
-
-        const adsData = [
-            { id: 1, title: "ايفون 13 برو ماكس بحالة الزيرو", price: "28,500", location: "القاهرة", img: "https://images.unsplash.com/photo-1632661674596-df8be070a5c5?w=400&q=80", desc: "حالة الزيرو بالكرتونة" },
-            { id: 2, title: "تلفزيون سامسونج 55 بوصة Smart 4K", price: "12,000", location: "الجيزة", img: "https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=400&q=80", desc: "سمارت 4K بحالة ممتازة" }
-        ];
-
-        window.onload = () => {
-            document.getElementById('ads-grid').innerHTML = adsData.map(ad => `<div onclick="openProductModal(${ad.id})" class="ad-card bg-white rounded-2xl border border-gray-100 overflow-hidden flex flex-col shadow-sm"><div class="h-40 sm:h-48 bg-gray-200"><img src="${ad.img}" class="w-full h-full object-cover"></div><div class="p-3 text-right"><h3 class="text-xs font-bold text-gray-800 line-clamp-2">${ad.title}</h3><p class="text-blue-600 font-black text-sm mt-1">${ad.price} ج.م</p></div></div>`).join('');
-
-            const user = JSON.parse(localStorage.getItem('user'));
-            const authSection = document.getElementById('auth-section');
-            if (user) {
-                authSection.innerHTML = `
-                    <div class="flex items-center gap-3">
-                        <div class="relative">
-                            <div onclick="toggleUserMenu(event)" class="w-10 h-10 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center font-black text-lg border-2 border-white shadow-sm cursor-pointer">${user.name.charAt(0).toUpperCase()}</div>
-                            <div id="user-menu" class="user-menu absolute top-12 left-0 bg-white border border-gray-100 rounded-2xl p-2 min-w-[160px] shadow-xl z-[2000] text-right">
-                                <a href="messages.html" class="block px-4 py-2 text-xs font-bold text-gray-600 hover:bg-blue-50 rounded-lg transition-all">💬 الرسائل</a>
-                                <a href="#" class="block px-4 py-2 text-xs font-bold text-gray-600 hover:bg-blue-50 rounded-lg transition-all">📦 إعلاناتي</a>
-                                <hr class="my-1 border-gray-50">
-                                <button onclick="logout()" class="w-full text-right px-4 py-2 text-xs font-bold text-red-500 hover:bg-red-50 rounded-lg font-bold">🚪 خروج</button>
-                            </div>
-                        </div>
-                        <a href="add-ad.html" class="bg-blue-600 text-white px-5 py-2.5 rounded-xl font-black text-xs shadow-md active:scale-95 transition-all">+ بيع دلوقتي</a>
+        function renderAds(ads) {
+            const grid = document.getElementById('ads-grid');
+            if (ads.length === 0) {
+                grid.innerHTML = '<div class="col-span-full py-20 text-center text-gray-400 font-bold">لا توجد إعلانات منشورة بعد</div>';
+                return;
+            }
+            grid.innerHTML = ads.map(ad => `
+                <div onclick="openProductModal(${ad.id})" class="ad-card bg-white rounded-2xl border border-gray-100 overflow-hidden flex flex-col shadow-sm">
+                    <div class="h-40 bg-gray-200"><img src="${ad.image_url || 'https://via.placeholder.com/400x300?text=No+Image'}" class="w-full h-full object-cover"></div>
+                    <div class="p-3 text-right">
+                        <h3 class="text-xs font-bold text-gray-800 line-clamp-2">${ad.title}</h3>
+                        <p class="text-blue-600 font-black text-sm mt-1">${ad.price} ج.م</p>
+                        <div class="text-[9px] text-gray-400 mt-2">📍 ${ad.location}</div>
                     </div>
-                `;
-            }
-        };
+                </div>`).join('');
+        }
 
-        window.onclick = () => { if(document.getElementById('user-menu')) document.getElementById('user-menu').classList.remove('active'); };
-
-        function openProductModal(id) {
-            const ad = adsData.find(a => a.id === id);
+        window.openProductModal = function(id) {
+            const ad = fetchedAds.find(a => a.id === id);
+            if (!ad) return;
             document.getElementById('modal-title').innerText = ad.title;
             document.getElementById('modal-price').innerText = ad.price + " ج.م";
             document.getElementById('modal-location').innerText = ad.location;
-            document.getElementById('modal-desc').innerText = ad.desc;
-            document.getElementById('modal-img').src = ad.img;
+            document.getElementById('modal-desc').innerText = ad.description;
+            document.getElementById('modal-img').src = ad.image_url || 'https://via.placeholder.com/800x600?text=Robabikia';
             document.getElementById('product-modal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
         }
-        function closeProductModal() { document.getElementById('product-modal').style.display = 'none'; }
+
+        window.closeProductModal = function() { document.getElementById('product-modal').style.display = 'none'; document.body.style.overflow = 'auto'; }
+
+        window.toggleSub = function(key, btn, name) {
+            const bar = document.getElementById('sub-menu-bar');
+            const content = document.getElementById('sub-content');
+            if (window.lastKey === key) { bar.style.display = 'none'; btn.classList.remove('active'); window.lastKey = ''; return; }
+            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active');
+            content.innerHTML = `<a href="#" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-[11px] font-bold shadow-md">الكل في ${name}</a>` + subData[key].map(opt => `<a href="#" class="bg-white px-4 py-2 rounded-xl text-[11px] font-bold text-gray-700 shadow-sm border border-gray-100 hover:border-blue-500 transition-all">${opt}</a>`).join('');
+            bar.style.display = 'block'; window.lastKey = key;
+        }
+
+        window.toggleLocationModal = function() {
+            const m = document.getElementById('location-modal');
+            m.style.display = (m.style.display === 'flex' ? 'none' : 'flex');
+            if(m.style.display === 'flex') renderLocations(egyptLocations);
+        }
+
+        function renderLocations(locations) {
+            document.getElementById('location-list').innerHTML = locations.map(loc => `<div onclick="selectLocation('${loc}')" class="p-3 hover:bg-blue-50 rounded-xl cursor-pointer font-bold text-sm text-gray-700 transition-all text-right">📍 ${loc}</div>`).join('');
+        }
+
+        window.filterLocations = function() {
+            const query = document.getElementById('location-search-input').value.toLowerCase();
+            renderLocations(egyptLocations.filter(loc => loc.toLowerCase().includes(query)));
+        }
+
+        window.selectLocation = function(loc) { document.getElementById('current-location').innerText = loc; toggleLocationModal(); }
+        window.logout = function() { localStorage.removeItem('user'); window.location.reload(); }
+
+        window.onload = () => {
+            fetchRealAds();
+            const user = JSON.parse(localStorage.getItem('user'));
+            if (user) {
+                document.getElementById('auth-section').innerHTML = `
+                    <div class="user-container relative flex items-center gap-3 cursor-pointer group">
+                        <div onclick="document.getElementById('user-menu').classList.toggle('active')" class="w-10 h-10 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center font-black text-lg border-2 border-white shadow-sm">${user.name.charAt(0).toUpperCase()}</div>
+                        <div id="user-menu" class="user-menu absolute top-12 left-0 bg-white border border-gray-100 rounded-2xl p-2 min-w-[160px] shadow-xl z-[2000] text-right">
+                            <a href="messages.html" class="block px-4 py-2 text-xs font-bold text-gray-600 hover:bg-blue-50 rounded-lg">💬 الرسائل</a>
+                            <button onclick="logout()" class="w-full text-right px-4 py-2 text-xs font-bold text-red-500 hover:bg-red-50 rounded-lg">🚪 خروج</button>
+                        </div>
+                        <a href="add-ad.html" class="bg-blue-600 text-white px-5 py-2.5 rounded-xl font-black text-xs shadow-md">+ بيع دلوقتي</a>
+                    </div>`;
+            }
+        };
     </script>
 </body>
 </html>
