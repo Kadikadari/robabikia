@@ -15,6 +15,7 @@
         .msg-bubble { max-width: 80%; word-wrap: break-word; }
         .conv-item { transition: transform 0.2s; -webkit-user-select: none; user-select: none; }
         .conv-item:active { transform: scale(0.98); background-color: #f1f5f9; }
+        .unread-dot { width: 8px; height: 8px; background-color: #2563eb; border-radius: 50%; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col overflow-hidden">
@@ -29,7 +30,7 @@
         </div>
     </header>
 
-    <main class="flex-1 container mx-auto p-0 md:p-4">
+    <main class="flex-1 container mx-auto p-0 md:p-4 text-right">
         <div class="bg-white md:rounded-3xl shadow-2xl border border-gray-100 flex overflow-hidden chat-container">
 
             <!-- Conversations List -->
@@ -38,7 +39,7 @@
                     <h2 class="text-xl font-black text-gray-800">الرسائل</h2>
                     <span class="text-[10px] text-gray-400 font-bold italic">اضغط مطولاً للحذف</span>
                 </div>
-                <div id="conversations-container" class="flex-1 overflow-y-auto no-scrollbar text-right">
+                <div id="conversations-container" class="flex-1 overflow-y-auto no-scrollbar">
                     <div class="p-10 text-center text-gray-400 text-xs font-bold italic">جاري تحميل المحادثات...</div>
                 </div>
             </div>
@@ -53,6 +54,15 @@
                             <h3 id="active-user-name" class="font-black text-sm text-gray-800 leading-none text-right">المحادثة</h3>
                             <span class="text-[9px] text-green-500 font-bold block text-right mt-1">نشط الآن</span>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Ad Context Bar -->
+                <div id="ad-context-bar" class="hidden bg-gray-50 p-2 px-4 border-b flex items-center gap-3">
+                    <img id="ad-context-img" src="" class="w-10 h-10 rounded-lg object-cover border border-white shadow-sm bg-white">
+                    <div class="flex-1">
+                        <h4 id="ad-context-title" class="text-[10px] font-black text-gray-700 truncate">اسم الإعلان</h4>
+                        <p id="ad-context-price" class="text-[9px] font-bold text-blue-600 mt-0.5">0 ج.م</p>
                     </div>
                 </div>
 
@@ -78,17 +88,22 @@
     </main>
 
     <script type="module">
-        import { db, collection, addDoc, query, orderBy, onSnapshot, where, serverTimestamp, doc, updateDoc, arrayUnion } from "./firebase-config.js";
+        import { db, collection, addDoc, query, orderBy, onSnapshot, where, serverTimestamp, doc, updateDoc, arrayUnion, getDoc } from "./firebase-config.js";
 
         const user = JSON.parse(localStorage.getItem('user'));
         if (!user) window.location.href = 'login.html';
+
+        // Request notification permission
+        if (Notification.permission === "default") {
+            Notification.requestPermission();
+        }
 
         document.getElementById('current-user-avatar').innerText = (user.name || user.email).charAt(0).toUpperCase();
 
         let currentChatId = null;
         let unsubMessages = null;
 
-        window.openChat = function(chatId, otherPartyEmail) {
+        window.openChat = async function(chatId, otherPartyEmail, adInfo = null) {
             console.log("Opening chat:", chatId);
             if (unsubMessages) unsubMessages();
             currentChatId = chatId;
@@ -96,6 +111,17 @@
             const name = otherPartyEmail.split('@')[0];
             document.getElementById('active-user-name').innerText = name;
             document.getElementById('active-user-avatar').innerText = name.charAt(0).toUpperCase();
+
+            // Show Ad Context if exists
+            const adBar = document.getElementById('ad-context-bar');
+            if (adInfo) {
+                adBar.classList.remove('hidden');
+                document.getElementById('ad-context-img').src = adInfo.img;
+                document.getElementById('ad-context-title').innerText = adInfo.title;
+                document.getElementById('ad-context-price').innerText = adInfo.price + " ج.م";
+            } else {
+                adBar.classList.add('hidden');
+            }
 
             if (window.innerWidth < 768) {
                 document.getElementById('conv-list').classList.add('hidden');
@@ -106,6 +132,13 @@
             document.getElementById('empty-chat').classList.add('hidden');
 
             loadMessages(chatId);
+
+            // Mark chat as read
+            try {
+                await updateDoc(doc(db, "chats", chatId), {
+                    [`unreadCount.${user.email.replace(/\./g, '_')}`]: 0
+                });
+            } catch(e) {}
         };
 
         window.backToList = function() {
@@ -113,6 +146,8 @@
             document.getElementById('main-header').classList.remove('hidden');
             document.getElementById('chat-window').classList.add('hidden');
             document.getElementById('chat-window').classList.remove('flex');
+            currentChatId = null;
+            if (unsubMessages) unsubMessages();
         };
 
         window.deleteConversation = async function(chatId) {
@@ -121,7 +156,6 @@
                     await updateDoc(doc(db, "chats", chatId), {
                         hiddenFor: arrayUnion(user.email)
                     });
-                    console.log("Chat hidden for user");
                 } catch (e) { console.error("Error deleting chat:", e); }
             }
         };
@@ -146,8 +180,6 @@
                         </div>`);
                 });
                 box.scrollTop = box.scrollHeight;
-            }, (error) => {
-                console.error("Snapshot error:", error);
             });
         }
 
@@ -157,88 +189,142 @@
             const text = input.value.trim();
             const sendBtn = document.getElementById('send-btn');
 
-            if (!text || !currentChatId) {
-                console.log("Missing text or chatId:", { text, currentChatId });
-                return;
-            }
+            if (!text || !currentChatId) return;
 
             input.value = '';
             sendBtn.disabled = true;
 
             try {
-                console.log("Sending message to chat:", currentChatId);
-                // 1. إرسال الرسالة
+                const chatRef = doc(db, "chats", currentChatId);
+                const chatSnap = await getDoc(chatRef);
+                const chatData = chatSnap.data();
+                const otherEmail = chatData.participants.find(p => p !== user.email);
+                const otherKey = otherEmail.replace(/\./g, '_');
+
+                // 1. Send Message
                 await addDoc(collection(db, "chats", currentChatId, "messages"), {
                     text: text,
                     sender: user.email,
                     timestamp: serverTimestamp()
                 });
 
-                // 2. تحديث المحادثة لتظهر للجميع (إلغاء الإخفاء)
-                await updateDoc(doc(db, "chats", currentChatId), {
+                // 2. Update Chat Document (Unread count for the other party)
+                await updateDoc(chatRef, {
                     hiddenFor: [],
                     lastMessage: text,
-                    lastMessageTime: serverTimestamp()
+                    lastMessageTime: serverTimestamp(),
+                    [`unreadCount.${otherKey}`]: (chatData.unreadCount?.[otherKey] || 0) + 1
                 });
 
-                console.log("Message sent successfully");
             } catch (err) {
                 console.error("Send error:", err);
                 alert("فشل الإرسال: " + err.message);
-                input.value = text; // إعادة النص في حال الفشل
+                input.value = text;
             } finally {
                 sendBtn.disabled = false;
             }
         });
 
         function fetchConversations() {
-            const q = query(collection(db, "chats"), where("participants", "array-contains", user.email));
+            const q = query(collection(db, "chats"), where("participants", "array-contains", user.email), orderBy("lastMessageTime", "desc"));
             onSnapshot(q, (snapshot) => {
                 const container = document.getElementById('conversations-container');
                 container.innerHTML = snapshot.empty ? '<div class="p-10 text-center text-gray-400 text-xs font-bold">لا توجد محادثات</div>' : '';
-                snapshot.forEach((doc) => {
-                    const chat = doc.data();
+
+                snapshot.forEach((docSnap) => {
+                    const chat = docSnap.data();
                     if (chat.hiddenFor && chat.hiddenFor.includes(user.email)) return;
+
                     const otherEmail = chat.participants.find(e => e !== user.email);
                     if (!otherEmail) return;
+
                     const name = otherEmail.split('@')[0];
+                    const userKey = user.email.replace(/\./g, '_');
+                    const unread = chat.unreadCount?.[userKey] || 0;
+
+                    // Notification Logic: if there's a new message and user is not in the chat
+                    if (unread > 0 && currentChatId !== docSnap.id) {
+                        showBrowserNotification(name, chat.lastMessage);
+                    }
+
+                    const adImg = chat.lastAd?.img || '';
+                    const avatarContent = adImg
+                        ? `<img src="${adImg}" class="w-12 h-12 rounded-2xl object-cover border border-gray-100 shadow-sm">`
+                        : `<div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center font-black text-lg">${name.charAt(0).toUpperCase()}</div>`;
+
                     container.insertAdjacentHTML('beforeend', `
-                        <div onmousedown="startPress('${doc.id}')" onmouseup="cancelPress()" ontouchstart="startPress('${doc.id}')" ontouchend="cancelPress()"
-                             onclick="openChat('${doc.id}', '${otherEmail}')"
-                             class="conv-item p-5 flex items-center gap-4 cursor-pointer hover:bg-white transition-all border-b border-gray-50 ${currentChatId === doc.id ? 'bg-white border-r-4 border-r-blue-600' : ''}">
-                            <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center font-black text-lg">${name.charAt(0).toUpperCase()}</div>
-                            <div class="flex-1">
-                                <h4 class="font-black text-sm text-gray-800">${name}</h4>
-                                <p class="text-[10px] text-gray-400 truncate">${chat.lastMessage || 'اضغط للدردشة'}</p>
+                        <div onmousedown="startPress('${docSnap.id}')" onmouseup="cancelPress()" ontouchstart="startPress('${docSnap.id}')" ontouchend="cancelPress()"
+                             onclick='openChat("${docSnap.id}", "${otherEmail}", ${JSON.stringify(chat.lastAd)})'
+                             class="conv-item p-5 flex items-center gap-4 cursor-pointer hover:bg-white transition-all border-b border-gray-50 ${currentChatId === docSnap.id ? 'bg-white border-r-4 border-r-blue-600' : ''}">
+                            <div class="relative">
+                                ${avatarContent}
+                                ${unread > 0 ? '<div class="absolute -top-1 -right-1 unread-dot border-2 border-white"></div>' : ''}
+                            </div>
+                            <div class="flex-1 overflow-hidden">
+                                <div class="flex justify-between items-center mb-0.5">
+                                    <h4 class="font-black text-sm text-gray-800">${name}</h4>
+                                    ${unread > 0 ? `<span class="bg-blue-600 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full">${unread}</span>` : ''}
+                                </div>
+                                <p class="text-[10px] text-gray-400 truncate">${chat.lastMessage || 'بدء محادثة جديدة'}</p>
                             </div>
                         </div>`);
                 });
             });
         }
 
+        let lastNotifTime = 0;
+        function showBrowserNotification(sender, text) {
+            const now = Date.now();
+            if (now - lastNotifTime < 5000) return; // Limit to one every 5 seconds
+            lastNotifTime = now;
+
+            if (Notification.permission === "granted") {
+                new Notification("رسالة جديدة من " + sender, {
+                    body: text,
+                    icon: "/favicon.ico" // Or a default icon
+                });
+            }
+        }
+
         async function checkIncomingChat() {
             const params = new URLSearchParams(window.location.search);
             const sellerEmail = params.get('seller');
+            const adTitle = params.get('ad');
+            const adImg = params.get('img');
+            const adPrice = params.get('price');
+            const adId = params.get('adId');
+
             if (sellerEmail && sellerEmail !== user.email) {
                 console.log("Checking for incoming chat with:", sellerEmail);
                 const q = query(collection(db, "chats"), where("participants", "array-contains", user.email));
 
                 onSnapshot(q, async (snapshot) => {
                     let existingChat = snapshot.docs.find(d => d.data().participants.includes(sellerEmail));
+
+                    const adData = adTitle ? { title: adTitle, img: adImg, price: adPrice, id: adId } : null;
+
                     if (existingChat) {
                         console.log("Existing chat found:", existingChat.id);
-                        openChat(existingChat.id, sellerEmail);
+                        if (adData) {
+                            await updateDoc(doc(db, "chats", existingChat.id), {
+                                lastAd: adData,
+                                hiddenFor: []
+                            });
+                        }
+                        openChat(existingChat.id, sellerEmail, adData || existingChat.data().lastAd);
                     } else {
                         console.log("Creating new chat...");
                         try {
                             const newChat = await addDoc(collection(db, "chats"), {
                                 participants: [user.email, sellerEmail],
+                                lastAd: adData,
                                 createdAt: serverTimestamp(),
                                 hiddenFor: [],
                                 lastMessage: "",
-                                lastMessageTime: serverTimestamp()
+                                lastMessageTime: serverTimestamp(),
+                                unreadCount: {}
                             });
-                            openChat(newChat.id, sellerEmail);
+                            openChat(newChat.id, sellerEmail, adData);
                         } catch (e) {
                             console.error("Error creating chat:", e);
                         }
