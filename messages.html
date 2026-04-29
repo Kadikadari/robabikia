@@ -13,7 +13,6 @@
         .chat-container { height: calc(100vh - 120px); }
         @media (max-width: 768px) { .chat-container { height: calc(100vh - 80px); } }
         .msg-bubble { max-width: 80%; word-wrap: break-word; }
-        /* أنيميشن بسيط عند الضغط المطول */
         .conv-item { transition: transform 0.2s; -webkit-user-select: none; user-select: none; }
         .conv-item:active { transform: scale(0.98); background-color: #f1f5f9; }
     </style>
@@ -37,9 +36,9 @@
             <div id="conv-list" class="w-full md:w-96 border-l border-gray-100 flex flex-col bg-gray-50/30">
                 <div class="p-6 bg-white border-b flex justify-between items-center">
                     <h2 class="text-xl font-black text-gray-800">الرسائل</h2>
-                    <span class="text-[10px] text-gray-400 font-bold">اضغط مطولاً للحذف</span>
+                    <span class="text-[10px] text-gray-400 font-bold italic">اضغط مطولاً للحذف</span>
                 </div>
-                <div id="conversations-container" class="flex-1 overflow-y-auto no-scrollbar">
+                <div id="conversations-container" class="flex-1 overflow-y-auto no-scrollbar text-right">
                     <div class="p-10 text-center text-gray-400 text-xs font-bold italic">جاري تحميل المحادثات...</div>
                 </div>
             </div>
@@ -51,21 +50,19 @@
                         <button onclick="backToList()" class="md:hidden text-gray-400 p-2">➡</button>
                         <div id="active-user-avatar" class="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-black text-sm">؟</div>
                         <div>
-                            <h3 id="active-user-name" class="font-black text-sm text-gray-800 leading-none">جاري التحميل...</h3>
-                            <span class="text-[9px] text-green-500 font-bold">نشط الآن</span>
+                            <h3 id="active-user-name" class="font-black text-sm text-gray-800 leading-none text-right">المحادثة</h3>
+                            <span class="text-[9px] text-green-500 font-bold block text-right mt-1">نشط الآن</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- Messages Area -->
                 <div id="messages-box" class="flex-1 overflow-y-auto p-6 space-y-4 no-scrollbar bg-gray-50/10 flex flex-col"></div>
 
-                <!-- Input Area -->
                 <div class="p-4 bg-white border-t">
                     <form id="chat-form" class="flex items-center gap-3">
                         <input type="text" id="msg-input" autocomplete="off" placeholder="اكتب رسالتك هنا..."
                                class="flex-1 bg-gray-100 border-none rounded-2xl py-3.5 px-5 text-sm outline-none focus:ring-2 focus:ring-blue-500 text-right">
-                        <button type="submit" class="bg-blue-600 text-white w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg active:scale-90 transition-all">
+                        <button type="submit" id="send-btn" class="bg-blue-600 text-white w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg active:scale-90 transition-all">
                             <span class="text-xl">✈</span>
                         </button>
                     </form>
@@ -81,7 +78,7 @@
     </main>
 
     <script type="module">
-        import { db, collection, addDoc, query, orderBy, onSnapshot, where, serverTimestamp, doc, updateDoc, arrayUnion, arrayRemove } from "./firebase-config.js";
+        import { db, collection, addDoc, query, orderBy, onSnapshot, where, serverTimestamp, doc, updateDoc, arrayUnion } from "./firebase-config.js";
 
         const user = JSON.parse(localStorage.getItem('user'));
         if (!user) window.location.href = 'login.html';
@@ -91,8 +88,8 @@
         let currentChatId = null;
         let unsubMessages = null;
 
-        // دالة لفتح محادثة
         window.openChat = function(chatId, otherPartyEmail) {
+            console.log("Opening chat:", chatId);
             if (unsubMessages) unsubMessages();
             currentChatId = chatId;
 
@@ -118,34 +115,20 @@
             document.getElementById('chat-window').classList.remove('flex');
         };
 
-        // حذف المحادثة (إخفاؤها للمستخدم الحالي فقط)
         window.deleteConversation = async function(chatId) {
-            if (confirm('هل تريد حذف هذه المحادثة من قائمتك؟ لن يتم حذفها عند الطرف الآخر.')) {
+            if (confirm('هل تريد حذف هذه المحادثة؟')) {
                 try {
-                    const chatRef = doc(db, "chats", chatId);
-                    await updateDoc(chatRef, {
+                    await updateDoc(doc(db, "chats", chatId), {
                         hiddenFor: arrayUnion(user.email)
                     });
-                    if (currentChatId === chatId) {
-                        currentChatId = null;
-                        document.getElementById('chat-window').classList.add('hidden');
-                        document.getElementById('empty-chat').classList.remove('hidden');
-                    }
-                } catch (err) {
-                    console.error("Error hiding chat:", err);
-                    alert("عذراً، حدث خطأ أثناء الحذف");
-                }
+                    console.log("Chat hidden for user");
+                } catch (e) { console.error("Error deleting chat:", e); }
             }
         };
 
-        // كشف الضغط المطول
         let pressTimer;
-        window.startPress = function(chatId) {
-            pressTimer = window.setTimeout(() => deleteConversation(chatId), 800);
-        };
-        window.cancelPress = function() {
-            clearTimeout(pressTimer);
-        };
+        window.startPress = (id) => pressTimer = window.setTimeout(() => deleteConversation(id), 800);
+        window.cancelPress = () => clearTimeout(pressTimer);
 
         function loadMessages(chatId) {
             const q = query(collection(db, "chats", chatId, "messages"), orderBy("timestamp", "asc"));
@@ -155,15 +138,16 @@
                 snapshot.forEach((doc) => {
                     const msg = doc.data();
                     const isMe = msg.sender === user.email;
-                    const msgHtml = `
+                    box.insertAdjacentHTML('beforeend', `
                         <div class="flex ${isMe ? 'justify-start' : 'justify-end'}">
                             <div class="${isMe ? 'bg-blue-600 text-white rounded-br-none' : 'bg-white border border-gray-100 text-gray-800 rounded-bl-none'} p-3 px-4 rounded-2xl shadow-sm msg-bubble">
                                 <p class="text-sm font-bold text-right">${msg.text}</p>
                             </div>
-                        </div>`;
-                    box.insertAdjacentHTML('beforeend', msgHtml);
+                        </div>`);
                 });
                 box.scrollTop = box.scrollHeight;
+            }, (error) => {
+                console.error("Snapshot error:", error);
             });
         }
 
@@ -171,50 +155,63 @@
             e.preventDefault();
             const input = document.getElementById('msg-input');
             const text = input.value.trim();
-            if (!text || !currentChatId) return;
+            const sendBtn = document.getElementById('send-btn');
+
+            if (!text || !currentChatId) {
+                console.log("Missing text or chatId:", { text, currentChatId });
+                return;
+            }
 
             input.value = '';
-            try {
-                // إذا أرسل المستخدم رسالة، تظهر المحادثة للطرفين مرة أخرى (إلغاء الإخفاء)
-                const chatRef = doc(db, "chats", currentChatId);
-                await updateDoc(chatRef, { hiddenFor: [] });
+            sendBtn.disabled = true;
 
+            try {
+                console.log("Sending message to chat:", currentChatId);
+                // 1. إرسال الرسالة
                 await addDoc(collection(db, "chats", currentChatId, "messages"), {
                     text: text,
                     sender: user.email,
                     timestamp: serverTimestamp()
                 });
-            } catch (err) { console.error(err); }
+
+                // 2. تحديث المحادثة لتظهر للجميع (إلغاء الإخفاء)
+                await updateDoc(doc(db, "chats", currentChatId), {
+                    hiddenFor: [],
+                    lastMessage: text,
+                    lastMessageTime: serverTimestamp()
+                });
+
+                console.log("Message sent successfully");
+            } catch (err) {
+                console.error("Send error:", err);
+                alert("فشل الإرسال: " + err.message);
+                input.value = text; // إعادة النص في حال الفشل
+            } finally {
+                sendBtn.disabled = false;
+            }
         });
 
         function fetchConversations() {
             const q = query(collection(db, "chats"), where("participants", "array-contains", user.email));
             onSnapshot(q, (snapshot) => {
                 const container = document.getElementById('conversations-container');
-                if (snapshot.empty) {
-                    container.innerHTML = '<div class="p-10 text-center text-gray-400 text-xs font-bold">لا توجد محادثات بعد</div>';
-                    return;
-                }
-                container.innerHTML = '';
+                container.innerHTML = snapshot.empty ? '<div class="p-10 text-center text-gray-400 text-xs font-bold">لا توجد محادثات</div>' : '';
                 snapshot.forEach((doc) => {
                     const chat = doc.data();
-                    // تخطي المحادثات التي قام المستخدم بإخفائها
                     if (chat.hiddenFor && chat.hiddenFor.includes(user.email)) return;
-
                     const otherEmail = chat.participants.find(e => e !== user.email);
+                    if (!otherEmail) return;
                     const name = otherEmail.split('@')[0];
-                    const chatHtml = `
-                        <div onmousedown="startPress('${doc.id}')" onmouseup="cancelPress()" onmouseleave="cancelPress()"
-                             ontouchstart="startPress('${doc.id}')" ontouchend="cancelPress()"
+                    container.insertAdjacentHTML('beforeend', `
+                        <div onmousedown="startPress('${doc.id}')" onmouseup="cancelPress()" ontouchstart="startPress('${doc.id}')" ontouchend="cancelPress()"
                              onclick="openChat('${doc.id}', '${otherEmail}')"
                              class="conv-item p-5 flex items-center gap-4 cursor-pointer hover:bg-white transition-all border-b border-gray-50 ${currentChatId === doc.id ? 'bg-white border-r-4 border-r-blue-600' : ''}">
                             <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center font-black text-lg">${name.charAt(0).toUpperCase()}</div>
                             <div class="flex-1">
                                 <h4 class="font-black text-sm text-gray-800">${name}</h4>
-                                <p class="text-[10px] text-gray-400 truncate">اضغط للدردشة أو مطولاً للحذف</p>
+                                <p class="text-[10px] text-gray-400 truncate">${chat.lastMessage || 'اضغط للدردشة'}</p>
                             </div>
-                        </div>`;
-                    container.insertAdjacentHTML('beforeend', chatHtml);
+                        </div>`);
                 });
             });
         }
@@ -222,28 +219,29 @@
         async function checkIncomingChat() {
             const params = new URLSearchParams(window.location.search);
             const sellerEmail = params.get('seller');
-            const adTitle = params.get('ad');
-
             if (sellerEmail && sellerEmail !== user.email) {
+                console.log("Checking for incoming chat with:", sellerEmail);
                 const q = query(collection(db, "chats"), where("participants", "array-contains", user.email));
-                onSnapshot(q, async (snapshot) => {
-                    let existingChat = null;
-                    snapshot.forEach(doc => {
-                        if (doc.data().participants.includes(sellerEmail)) existingChat = { id: doc.id };
-                    });
 
+                onSnapshot(q, async (snapshot) => {
+                    let existingChat = snapshot.docs.find(d => d.data().participants.includes(sellerEmail));
                     if (existingChat) {
-                        const chatRef = doc(db, "chats", existingChat.id);
-                        await updateDoc(chatRef, { hiddenFor: [] }); // إظهارها إذا كانت مخفية
+                        console.log("Existing chat found:", existingChat.id);
                         openChat(existingChat.id, sellerEmail);
                     } else {
-                        const newChat = await addDoc(collection(db, "chats"), {
-                            participants: [user.email, sellerEmail],
-                            adTitle: adTitle || "بدون عنوان",
-                            createdAt: serverTimestamp(),
-                            hiddenFor: []
-                        });
-                        openChat(newChat.id, sellerEmail);
+                        console.log("Creating new chat...");
+                        try {
+                            const newChat = await addDoc(collection(db, "chats"), {
+                                participants: [user.email, sellerEmail],
+                                createdAt: serverTimestamp(),
+                                hiddenFor: [],
+                                lastMessage: "",
+                                lastMessageTime: serverTimestamp()
+                            });
+                            openChat(newChat.id, sellerEmail);
+                        } catch (e) {
+                            console.error("Error creating chat:", e);
+                        }
                     }
                 }, { once: true });
             }
