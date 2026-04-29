@@ -105,8 +105,8 @@
                 <div class="absolute right-2 md:right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs md:text-sm">🔍</div>
             </div>
             <div id="auth-section" class="hidden md:flex items-center gap-3 shrink-0">
-                <a href="my-ads.html" class="text-xs font-black text-gray-500 hover:text-blue-600 px-3 transition-colors">إعلاناتي</a>
-                <a href="add-ad.html" class="bg-blue-600 text-white px-5 py-2.5 rounded-xl font-black text-xs shadow-md">+ بيع دلوقتي</a>
+                <a href="login.html" class="text-xs font-black text-gray-500 hover:text-blue-600 px-3 transition-colors">دخول</a>
+                <a href="login.html" class="bg-blue-600 text-white px-5 py-2.5 rounded-xl font-black text-xs shadow-md">+ بيع دلوقتي</a>
             </div>
         </div>
     </header>
@@ -162,6 +162,19 @@
         const user = JSON.parse(localStorage.getItem('user'));
         document.getElementById('current-city-name').innerText = selectedLocation;
 
+        const mockAds = [
+            { id: 'm1', title: 'هيونداي إلنترا 2022 كسر زيرو', price: 750000, location: 'القاهرة - مدينة نصر', main_category: 'cars', sub_category: 'سيارات للبيع', description: 'حالة ممتازة، فابريكا بالكامل، صيانة توكيل منتظمة.', image_url: JSON.stringify(['https://images.unsplash.com/photo-1542282088-fe8426682b8f?w=800']), phone: '01012345678', whatsapp: '01012345678', allow_chat: true, seller_email: 'bot@robabikia.com' },
+            { id: 'm2', title: 'آيفون 15 برو ماكس 256 جيجا', price: 62000, location: 'الجيزة - الشيخ زايد', main_category: 'elec', sub_category: 'موبايلات', description: 'جديد متبرشم، ضمان محلي، لون تيتانيوم طبيعي.', image_url: JSON.stringify(['https://images.unsplash.com/photo-1696446701796-da61225697cc?w=800']), phone: '01122334455', whatsapp: '01122334455', allow_chat: true, seller_email: 'bot@robabikia.com' },
+            { id: 'm3', title: 'شقة للبيع 160م التجمع الخامس', price: 4500000, location: 'القاهرة - التجمع الخامس', main_category: 'real', sub_category: 'شقق للبيع', description: '3 غرف، 2 حمام، نصف تشطيب، فيو رائع على لاند سكيب.', image_url: JSON.stringify(['https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800']), phone: '01233445566', whatsapp: '01233445566', allow_chat: true, seller_email: 'bot@robabikia.com' },
+            { id: 'm4', title: 'لابتوب ديل كور i7 جيل 12', price: 28000, location: 'الإسكندرية - سموحة', main_category: 'elec', sub_category: 'حواسيب ولابتوب', description: 'رامات 16، هارد 512 SSD، كارت شاشة خارجي، كالجديد.', image_url: JSON.stringify(['https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=800']), phone: '01066778899', whatsapp: '01066778899', allow_chat: true, seller_email: 'bot@robabikia.com' },
+            { id: 'm5', title: 'غرفة نوم مودرن خشب زان', price: 35000, location: 'دمياط - دمياط', main_category: 'home', sub_category: 'غرف نوم', description: 'تصميم تركي، خامات عالية الجودة، تشمل سرير ودولاب و2 كومود.', image_url: JSON.stringify(['https://images.unsplash.com/photo-1505691722718-4684475556b9?w=800']), phone: '01222333444', whatsapp: '01222333444', allow_chat: true, seller_email: 'bot@robabikia.com' },
+            { id: 'm6', title: 'سكوتر بينيلي VLM 200', price: 42000, location: 'القليوبية - بنها', main_category: 'cars', sub_category: 'موتوسيكلات', description: 'موديل 2023، رخصة سنة، حالة الموتور والكاوتش 100%.', image_url: JSON.stringify(['https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=800']), phone: '01111222333', whatsapp: '01111222333', allow_chat: true, seller_email: 'bot@robabikia.com' },
+            { id: 'm7', title: 'ثلاجة شارب 18 قدم إنفرتر', price: 21500, location: 'الغربية - طنطا', main_category: 'elec_appliances', sub_category: 'ثلاجات', description: 'لون سيلفر، شاشة ديجيتال، توفير طاقة، ضمان 10 سنوات.', image_url: JSON.stringify(['https://images.unsplash.com/photo-1571175432230-01c288a69984?w=800']), phone: '01099887766', whatsapp: '01099887766', allow_chat: true, seller_email: 'bot@robabikia.com' },
+            { id: 'm8', title: 'كلب جيرمن شيبرد بيور', price: 5500, location: 'المنوفية - شبين الكوم', main_category: 'animals', sub_category: 'كلاب', description: 'عمر 3 شهور، مطعم بالكامل، ذكي جداً ولعبي.', image_url: JSON.stringify(['https://images.unsplash.com/photo-1589944173250-3f447e3c3166?w=800']), phone: '01222333444', whatsapp: '01222333444', allow_chat: true, seller_email: 'bot@robabikia.com' },
+            { id: 'm9', title: 'بدلة رجالي كلاسيك تركي', price: 3200, location: 'الدقهلية - المنصورة', main_category: 'fashion', sub_category: 'ملابس رجالي', description: 'مقاس 52، خامة ممتازة، تلبس في المناسبات الرسمية.', image_url: JSON.stringify(['https://images.unsplash.com/photo-1594932224440-949936996a4b?w=800']), phone: '01555444333', whatsapp: '01555444333', allow_chat: true, seller_email: 'bot@robabikia.com' },
+            { id: 'm10', title: 'بوتاجاز فريش هامر 5 شعلة', price: 12800, location: 'الشرقية - الزقازيق', main_category: 'elec_appliances', sub_category: 'بوتاجازات', description: 'أمان كامل، مروحة لتوزيع الحرارة، لم يتم استخدامه.', image_url: JSON.stringify(['https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=800']), phone: '01011223344', whatsapp: '01011223344', allow_chat: true, seller_email: 'bot@robabikia.com' }
+        ];
+
         async function fetchAds() {
             let qB = supabase.from('ads').select('*');
             if (selectedLocation !== 'كل مصر') qB = qB.eq('location', selectedLocation);
@@ -170,11 +183,19 @@
             if (searchTerm) qB = qB.ilike('title', `%${searchTerm}%`);
 
             const { data, error } = await qB.order('created_at', { ascending: false });
-            if (!error) {
-                adsCache = data;
-                renderAds(data);
-                checkDirectLink();
-            }
+
+            let realAds = data || [];
+            let filteredMock = mockAds.filter(ad => {
+                if (selectedLocation !== 'كل مصر' && ad.location !== selectedLocation) return false;
+                if (activeCategory !== 'all' && ad.main_category !== activeCategory) return false;
+                if (activeSubCategory !== 'الكل' && ad.sub_category !== activeSubCategory) return false;
+                if (searchTerm && !ad.title.toLowerCase().includes(searchTerm.toLowerCase())) return false;
+                return true;
+            });
+
+            adsCache = [...realAds, ...filteredMock];
+            renderAds(adsCache);
+            checkDirectLink();
         }
 
         function checkDirectLink() {
@@ -303,7 +324,7 @@
             "الدقهلية - المنصورة", "الدقهلية - طلخا", "الدقهلية - ميت غمر", "الدقهلية - السنبلاوين", "الدقهلية - شربين", "الدقهلية - دكرنس", "الدقهلية - بلقاس",
             "الغربية - طنطا", "الغربية - المحلة الكبرى", "الغربية - كفر الزيات", "الغربية - زفتى", "الغربية - بسيون", "الغربية - قطور", "الغربية - السنطة",
             "المنوفية - شبين الكوم", "المنوفية - قويسنا", "المنوفية - أشمون", "المنوفية - منوف", "المنوفية - السادات", "المنوفية - الباجور", "المنوفية - بركة السبع",
-            "البحيرة - دمنهور", "البحيرة - كفر الدوار", "البحيرة - إيتاي البارود", "البحيرة - رشيد", "البحيرة - كوم حمادة", "البحيرة - أبو حمص", "البحيرة - حوش عيسى",
+            "البحيرة - dمنهور", "البحيرة - كفر الدوار", "البحيرة - إيتاي البارود", "البحيرة - رشيد", "البحيرة - كوم حمادة", "البحيرة - أبو حمص", "البحيرة - حوش عيسى",
             "كفر الشيخ - كفر الشيخ", "كفر الشيخ - دسوق", "كفر الشيخ - مطوبس", "كفر الشيخ - قلين", "كفر الشيخ - سيدي سالم", "كفر الشيخ - بلطيم",
             "دمياط - دمياط", "دمياط - دمياط الجديدة", "دمياط - رأس البر", "دمياط - فارسكور", "دمياط - الزرقا",
             "بور سعيد - حي الشرق", "بور سعيد - حي العرب", "بور سعيد - بور فؤاد", "بور سعيد - حي الزهور",
