@@ -20,6 +20,11 @@
         #user-menu { display: none; }
         #user-menu.active { display: block !important; animation: fadeIn 0.2s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Slider Styles */
+        .slider-btn { opacity: 0; transition: opacity 0.3s; }
+        .group:hover .slider-btn { opacity: 1; }
+        @media (max-width: 768px) { .slider-btn { opacity: 1; } }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-900">
@@ -27,11 +32,25 @@
     <!-- Product Details Modal -->
     <div id="product-modal" class="fixed inset-0 z-[3000] bg-black/60 hidden items-center justify-center sm:p-4 text-right">
         <div class="bg-white w-full max-w-4xl h-full sm:h-auto sm:max-h-[90vh] sm:rounded-3xl shadow-2xl overflow-y-auto no-scrollbar relative animate-in slide-in-from-bottom duration-300">
-            <button onclick="closeProductModal()" class="absolute top-4 right-4 z-10 bg-white/80 backdrop-blur w-10 h-10 rounded-full flex items-center justify-center shadow-lg font-bold">✕</button>
+            <button onclick="closeProductModal()" class="absolute top-4 right-4 z-[3100] bg-white/80 backdrop-blur w-10 h-10 rounded-full flex items-center justify-center shadow-lg font-bold">✕</button>
             <div class="flex flex-col md:flex-row">
-                <div class="w-full md:w-1/2 bg-gray-100 flex items-center justify-center">
-                    <img id="modal-img" src="" class="w-full h-full object-contain max-h-[500px]">
+
+                <!-- Image Slider Section -->
+                <div class="w-full md:w-1/2 bg-gray-100 flex items-center justify-center relative group min-h-[350px]">
+                    <img id="modal-img" src="" class="w-full h-full object-contain max-h-[500px] transition-all duration-300">
+
+                    <!-- Navigation Buttons (Hidden if only 1 image) -->
+                    <div id="slider-controls" class="hidden">
+                        <button onclick="prevImage()" class="slider-btn absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 text-blue-600 w-10 h-10 rounded-full flex items-center justify-center shadow-md font-bold text-xl hover:bg-white">❮</button>
+                        <button onclick="nextImage()" class="slider-btn absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 text-blue-600 w-10 h-10 rounded-full flex items-center justify-center shadow-md font-bold text-xl hover:bg-white">❯</button>
+
+                        <!-- Counter -->
+                        <div class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/60 text-white text-[10px] font-black px-3 py-1.5 rounded-full backdrop-blur-sm">
+                            <span id="photo-index">1</span> / <span id="photo-total">1</span>
+                        </div>
+                    </div>
                 </div>
+
                 <div class="w-full md:w-1/2 p-6 flex flex-col">
                     <div class="flex items-center gap-2 mb-4"><span class="bg-blue-100 text-blue-600 text-[10px] font-black px-2 py-1 rounded-md">إعلان موثوق</span><span id="modal-time" class="text-[10px] text-gray-400 mr-auto"></span></div>
                     <h2 id="modal-title" class="text-xl font-black text-gray-800 mb-2 leading-tight"></h2>
@@ -114,6 +133,8 @@
         import { supabase } from "./supabase-config.js";
 
         let adsCache = [];
+        let currentAdImages = [];
+        let currentImgIndex = 0;
 
         async function fetchAds() {
             try {
@@ -158,13 +179,31 @@
         window.openProductModal = function(id) {
             const ad = adsCache.find(a => a.id === id);
             if (!ad) return;
+
+            // استخراج كافة الصور
+            currentAdImages = [];
+            try {
+                if (ad.image_url && (ad.image_url.startsWith('[') || ad.image_url.startsWith('{'))) {
+                    const parsed = JSON.parse(ad.image_url);
+                    currentAdImages = Array.isArray(parsed) ? parsed : [parsed];
+                } else if (ad.image_url) {
+                    currentAdImages = [ad.image_url];
+                }
+            } catch(e) {
+                if(ad.image_url) currentAdImages = [ad.image_url];
+            }
+
+            if (currentAdImages.length === 0) currentAdImages = ["https://via.placeholder.com/800x600?text=No+Images"];
+
+            currentImgIndex = 0;
+            showImage(0);
+
             document.getElementById('modal-title').innerText = ad.title;
             document.getElementById('modal-price').innerText = ad.price + " ج.م";
             document.getElementById('modal-location').innerText = ad.location;
             document.getElementById('modal-desc').innerText = ad.description;
-            document.getElementById('modal-img').src = getSafeImageUrl(ad.image_url);
 
-            // برمجة زر الدردشة
+            // إعداد روابط الاتصال والدردشة
             document.getElementById('chat-btn').onclick = () => {
                 const user = JSON.parse(localStorage.getItem('user'));
                 if (!user) { window.location.href = 'login.html'; return; }
@@ -174,6 +213,33 @@
 
             document.getElementById('product-modal').style.display = 'flex';
             document.body.style.overflow = 'hidden';
+        }
+
+        window.showImage = function(index) {
+            const imgEl = document.getElementById('modal-img');
+            const controls = document.getElementById('slider-controls');
+            const indexEl = document.getElementById('photo-index');
+            const totalEl = document.getElementById('photo-total');
+
+            imgEl.src = currentAdImages[index];
+
+            if (currentAdImages.length > 1) {
+                controls.classList.remove('hidden');
+                indexEl.innerText = index + 1;
+                totalEl.innerText = currentAdImages.length;
+            } else {
+                controls.classList.add('hidden');
+            }
+        }
+
+        window.nextImage = function() {
+            currentImgIndex = (currentImgIndex + 1) % currentAdImages.length;
+            showImage(currentImgIndex);
+        }
+
+        window.prevImage = function() {
+            currentImgIndex = (currentImgIndex - 1 + currentAdImages.length) % currentAdImages.length;
+            showImage(currentImgIndex);
         }
 
         window.closeProductModal = function() { document.getElementById('product-modal').style.display = 'none'; document.body.style.overflow = 'auto'; }
