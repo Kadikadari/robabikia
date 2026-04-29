@@ -13,6 +13,9 @@
         .chat-container { height: calc(100vh - 120px); }
         @media (max-width: 768px) { .chat-container { height: calc(100vh - 80px); } }
         .msg-bubble { max-width: 80%; word-wrap: break-word; }
+        /* أنيميشن بسيط عند الضغط المطول */
+        .conv-item { transition: transform 0.2s; -webkit-user-select: none; user-select: none; }
+        .conv-item:active { transform: scale(0.98); background-color: #f1f5f9; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col overflow-hidden">
@@ -34,6 +37,7 @@
             <div id="conv-list" class="w-full md:w-96 border-l border-gray-100 flex flex-col bg-gray-50/30">
                 <div class="p-6 bg-white border-b flex justify-between items-center">
                     <h2 class="text-xl font-black text-gray-800">الرسائل</h2>
+                    <span class="text-[10px] text-gray-400 font-bold">اضغط مطولاً للحذف</span>
                 </div>
                 <div id="conversations-container" class="flex-1 overflow-y-auto no-scrollbar">
                     <div class="p-10 text-center text-gray-400 text-xs font-bold italic">جاري تحميل المحادثات...</div>
@@ -54,9 +58,7 @@
                 </div>
 
                 <!-- Messages Area -->
-                <div id="messages-box" class="flex-1 overflow-y-auto p-6 space-y-4 no-scrollbar bg-gray-50/10 flex flex-col">
-                    <!-- الرسائل ستظهر هنا -->
-                </div>
+                <div id="messages-box" class="flex-1 overflow-y-auto p-6 space-y-4 no-scrollbar bg-gray-50/10 flex flex-col"></div>
 
                 <!-- Input Area -->
                 <div class="p-4 bg-white border-t">
@@ -79,7 +81,7 @@
     </main>
 
     <script type="module">
-        import { db, collection, addDoc, query, orderBy, onSnapshot, where, serverTimestamp } from "./firebase-config.js";
+        import { db, collection, addDoc, query, orderBy, onSnapshot, where, serverTimestamp, doc, updateDoc, arrayUnion, arrayRemove } from "./firebase-config.js";
 
         const user = JSON.parse(localStorage.getItem('user'));
         if (!user) window.location.href = 'login.html';
@@ -91,19 +93,18 @@
 
         // دالة لفتح محادثة
         window.openChat = function(chatId, otherPartyEmail) {
-            if (unsubMessages) unsubMessages(); // إلغاء الاشتراك السابق
+            if (unsubMessages) unsubMessages();
             currentChatId = chatId;
 
             const name = otherPartyEmail.split('@')[0];
             document.getElementById('active-user-name').innerText = name;
             document.getElementById('active-user-avatar').innerText = name.charAt(0).toUpperCase();
 
-            // للتحكم في الموبايل
             if (window.innerWidth < 768) {
                 document.getElementById('conv-list').classList.add('hidden');
                 document.getElementById('main-header').classList.add('hidden');
             }
-            document.getElementById('chat-window').classList.remove('hidden');
+            document.getElementById('chat-window').classList.remove('hidden', 'md:hidden');
             document.getElementById('chat-window').classList.add('flex');
             document.getElementById('empty-chat').classList.add('hidden');
 
@@ -117,7 +118,35 @@
             document.getElementById('chat-window').classList.remove('flex');
         };
 
-        // تحميل الرسائل الحقيقية
+        // حذف المحادثة (إخفاؤها للمستخدم الحالي فقط)
+        window.deleteConversation = async function(chatId) {
+            if (confirm('هل تريد حذف هذه المحادثة من قائمتك؟ لن يتم حذفها عند الطرف الآخر.')) {
+                try {
+                    const chatRef = doc(db, "chats", chatId);
+                    await updateDoc(chatRef, {
+                        hiddenFor: arrayUnion(user.email)
+                    });
+                    if (currentChatId === chatId) {
+                        currentChatId = null;
+                        document.getElementById('chat-window').classList.add('hidden');
+                        document.getElementById('empty-chat').classList.remove('hidden');
+                    }
+                } catch (err) {
+                    console.error("Error hiding chat:", err);
+                    alert("عذراً، حدث خطأ أثناء الحذف");
+                }
+            }
+        };
+
+        // كشف الضغط المطول
+        let pressTimer;
+        window.startPress = function(chatId) {
+            pressTimer = window.setTimeout(() => deleteConversation(chatId), 800);
+        };
+        window.cancelPress = function() {
+            clearTimeout(pressTimer);
+        };
+
         function loadMessages(chatId) {
             const q = query(collection(db, "chats", chatId, "messages"), orderBy("timestamp", "asc"));
             unsubMessages = onSnapshot(q, (snapshot) => {
@@ -138,7 +167,6 @@
             });
         }
 
-        // إرسال رسالة
         document.getElementById('chat-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const input = document.getElementById('msg-input');
@@ -147,6 +175,10 @@
 
             input.value = '';
             try {
+                // إذا أرسل المستخدم رسالة، تظهر المحادثة للطرفين مرة أخرى (إلغاء الإخفاء)
+                const chatRef = doc(db, "chats", currentChatId);
+                await updateDoc(chatRef, { hiddenFor: [] });
+
                 await addDoc(collection(db, "chats", currentChatId, "messages"), {
                     text: text,
                     sender: user.email,
@@ -155,7 +187,6 @@
             } catch (err) { console.error(err); }
         });
 
-        // جلب قائمة المحادثات التي يكون المستخدم طرفاً فيها
         function fetchConversations() {
             const q = query(collection(db, "chats"), where("participants", "array-contains", user.email));
             onSnapshot(q, (snapshot) => {
@@ -167,14 +198,20 @@
                 container.innerHTML = '';
                 snapshot.forEach((doc) => {
                     const chat = doc.data();
+                    // تخطي المحادثات التي قام المستخدم بإخفائها
+                    if (chat.hiddenFor && chat.hiddenFor.includes(user.email)) return;
+
                     const otherEmail = chat.participants.find(e => e !== user.email);
                     const name = otherEmail.split('@')[0];
                     const chatHtml = `
-                        <div onclick="openChat('${doc.id}', '${otherEmail}')" class="p-5 flex items-center gap-4 cursor-pointer hover:bg-white transition-all border-b border-gray-50 ${currentChatId === doc.id ? 'bg-white border-r-4 border-r-blue-600' : ''}">
+                        <div onmousedown="startPress('${doc.id}')" onmouseup="cancelPress()" onmouseleave="cancelPress()"
+                             ontouchstart="startPress('${doc.id}')" ontouchend="cancelPress()"
+                             onclick="openChat('${doc.id}', '${otherEmail}')"
+                             class="conv-item p-5 flex items-center gap-4 cursor-pointer hover:bg-white transition-all border-b border-gray-50 ${currentChatId === doc.id ? 'bg-white border-r-4 border-r-blue-600' : ''}">
                             <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center font-black text-lg">${name.charAt(0).toUpperCase()}</div>
                             <div class="flex-1">
                                 <h4 class="font-black text-sm text-gray-800">${name}</h4>
-                                <p class="text-[10px] text-gray-400 truncate">اضغط لمتابعة الدردشة</p>
+                                <p class="text-[10px] text-gray-400 truncate">اضغط للدردشة أو مطولاً للحذف</p>
                             </div>
                         </div>`;
                     container.insertAdjacentHTML('beforeend', chatHtml);
@@ -182,14 +219,12 @@
             });
         }
 
-        // التعامل مع البدء بمحادثة جديدة من صفحة الإعلان
         async function checkIncomingChat() {
             const params = new URLSearchParams(window.location.search);
             const sellerEmail = params.get('seller');
             const adTitle = params.get('ad');
 
             if (sellerEmail && sellerEmail !== user.email) {
-                // البحث هل توجد محادثة سابقة
                 const q = query(collection(db, "chats"), where("participants", "array-contains", user.email));
                 onSnapshot(q, async (snapshot) => {
                     let existingChat = null;
@@ -198,13 +233,15 @@
                     });
 
                     if (existingChat) {
+                        const chatRef = doc(db, "chats", existingChat.id);
+                        await updateDoc(chatRef, { hiddenFor: [] }); // إظهارها إذا كانت مخفية
                         openChat(existingChat.id, sellerEmail);
                     } else {
-                        // إنشاء محادثة جديدة
                         const newChat = await addDoc(collection(db, "chats"), {
                             participants: [user.email, sellerEmail],
                             adTitle: adTitle || "بدون عنوان",
-                            createdAt: serverTimestamp()
+                            createdAt: serverTimestamp(),
+                            hiddenFor: []
                         });
                         openChat(newChat.id, sellerEmail);
                     }
