@@ -72,9 +72,9 @@
                     <p id="modal-desc" class="text-sm text-gray-600 leading-relaxed"></p>
                 </div>
                 <div class="grid grid-cols-1 gap-3 mt-auto">
-                    <button class="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl font-black text-sm shadow-lg">📞 اتصـــــال</button>
+                    <button id="call-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl font-black text-sm shadow-lg">📞 اتصـــــال</button>
                     <div class="grid grid-cols-2 gap-3">
-                        <button class="bg-green-500 hover:bg-green-600 text-white py-4 rounded-2xl font-black text-sm">💬 واتساب</button>
+                        <button id="whatsapp-btn" class="bg-green-500 hover:bg-green-600 text-white py-4 rounded-2xl font-black text-sm">💬 واتساب</button>
                         <button id="chat-btn" class="bg-gray-800 hover:bg-black text-white py-4 rounded-2xl font-black text-sm flex items-center justify-center">✉ دردشة</button>
                     </div>
                 </div>
@@ -285,11 +285,34 @@
             document.getElementById('modal-price').innerText = ad.price + " ج.م";
             document.getElementById('modal-location').innerText = ad.location;
             document.getElementById('modal-desc').innerText = ad.description;
-            document.getElementById('chat-btn').onclick = () => {
+
+            // Setup Contact Buttons
+            const callBtn = document.getElementById('call-btn');
+            const whatsappBtn = document.getElementById('whatsapp-btn');
+            const chatBtn = document.getElementById('chat-btn');
+
+            if (ad.phone) {
+                callBtn.onclick = () => window.location.href = `tel:${ad.phone}`;
+                callBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            } else {
+                callBtn.onclick = () => alert('رقم الهاتف غير متوفر لهذا الإعلان');
+                callBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+
+            if (ad.whatsapp) {
+                whatsappBtn.onclick = () => window.open(`https://wa.me/2${ad.whatsapp}`, '_blank');
+                whatsappBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            } else {
+                whatsappBtn.onclick = () => alert('رقم الواتساب غير متوفر لهذا الإعلان');
+                whatsappBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+
+            chatBtn.onclick = () => {
                 if (!user) { window.location.href = 'login.html'; return; }
                 const adImage = getSafeImageUrl(ad.image_url);
                 window.location.href = `messages.html?seller=${ad.seller_email.toLowerCase()}&adId=${ad.id}&ad=${encodeURIComponent(ad.title)}&img=${encodeURIComponent(adImage)}&price=${ad.price}`;
             };
+
             document.getElementById('product-modal').style.display = 'flex';
             document.body.style.overflow = 'hidden';
         }

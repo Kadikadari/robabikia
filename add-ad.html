@@ -96,6 +96,20 @@
                     </div>
                 </section>
 
+                <section class="space-y-5">
+                    <h3 class="text-lg font-black text-gray-800 mb-2">📞 معلومات التواصل</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <div>
+                            <label class="text-xs font-black text-gray-600 block mb-2 mr-1">رقم الهاتف</label>
+                            <input type="tel" id="phone" required placeholder="01xxxxxxxxx" class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 text-sm text-right">
+                        </div>
+                        <div>
+                            <label class="text-xs font-black text-gray-600 block mb-2 mr-1">رقم الواتساب</label>
+                            <input type="tel" id="whatsapp" placeholder="01xxxxxxxxx" class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 text-sm text-right">
+                        </div>
+                    </div>
+                </section>
+
                 <section class="space-y-4">
                     <h3 class="text-lg font-black text-gray-800 mb-4">📍 الموقع</h3>
                     <div onclick="toggleLocationModal()" class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 text-sm text-right cursor-pointer flex justify-between items-center hover:border-blue-500 transition-all">
@@ -158,6 +172,8 @@
             document.getElementById('price').value = data.price;
             document.getElementById('description').value = data.description;
             document.getElementById('main-category').value = data.main_category;
+            document.getElementById('phone').value = data.phone || '';
+            document.getElementById('whatsapp').value = data.whatsapp || '';
 
             // Handle sub category
             updateSubCategories(data.main_category);
@@ -262,6 +278,8 @@
                     sub_category: document.getElementById('sub-category').value,
                     price: parseFloat(document.getElementById('price').value),
                     description: document.getElementById('description').value,
+                    phone: document.getElementById('phone').value,
+                    whatsapp: document.getElementById('whatsapp').value,
                     location: document.getElementById('location').value,
                     image_url: JSON.stringify(finalImages)
                 };
