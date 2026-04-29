@@ -184,13 +184,13 @@
         // Listen to Unread Messages for Badge
         function listenToUnreadMessages() {
             if (!user || !user.email) return;
-            const q = query(collection(db, "chats"), where("participants", "array-contains", user.email));
+            const q = query(collection(db, "chats"), where("participants", "array-contains", user.email.toLowerCase()));
             onSnapshot(q, (snapshot) => {
                 let totalUnread = 0;
-                const userKey = user.email.replace(/\./g, '_');
+                const userKey = user.email.toLowerCase().replace(/\./g, '_');
                 snapshot.forEach(doc => {
                     const chat = doc.data();
-                    if (chat.hiddenFor && chat.hiddenFor.includes(user.email)) return;
+                    if (chat.hiddenFor && chat.hiddenFor.includes(user.email.toLowerCase())) return;
                     totalUnread += (chat.unreadCount?.[userKey] || 0);
                 });
 
@@ -221,12 +221,12 @@
         function renderLocationsUI(list) {
             const container = document.getElementById('location-list');
             container.innerHTML = `<div onclick="selectLocation('كل مصر')" class="p-3 hover:bg-blue-50 rounded-xl cursor-pointer font-black text-sm text-right border-b border-gray-50 transition-all text-blue-600">📍 كل مصر</div>`;
-            const egyptLocations = ["القاهرة - مدينة نصر", "القاهرة - التجمع الخامس", "القاهرة - مصر الجديدة", "القاهرة - المعادي", "القاهرة - الرحاب", "القاهرة - مدينتي", "الجيزة - 6 أكتوبر", "الجيزة - الشيخ زايد", "الجيزة - الهرم", "الجيزة - فيصل", "الجيزة - المهندسين", "الإسكندرية - سموحة", "الإسكندرية - ميامي", "الدقهلية - المنصورة", "الشرقية - الزقازيق", "الغربية - طنطا", "المنوفية - شبين الكوم", "البحيرة - دمنهور", "كفر الشيخ", "دمياط", "بور سعيد", "السويس", "الإسماعيلية", "الفيوم", "بني سويف", "المنيا", "أسيوط", "سوهاج", "قنا", "الأقصر", "أسوان", "الغردقة", "مرسى مطروح"];
+            const egyptLocations = ["القاهرة - مدينة نصر", "القاهرة - التجمع الخامس", "القاهرة - مصر الجديدة", "القاهرة - المعادي", "القاهرة - الرحاب", "القاهرة - مدينتي", "الجيزة - 6 أكتوبر", "الجيزة - الشيخ زايد", "الجيزة - الهرم", "الجيزة - فيصل", "الجيزة - المهندسين", "الإسكندرية - سموحة", "الإسكندرية - ميامي", "الدقهلية - المنصورة", "الشرقية - الزقازيق", "الغربية - طنطا", "المنوفية - شبين الكوم", "البحيرة - dمنهور", "كفر الشيخ", "دمياط", "بور سعيد", "السويس", "الإسماعيلية", "الفيوم", "بني سويف", "المنيا", "أسيوط", "سوهاج", "قنا", "الأقصر", "أسوان", "الغردقة", "مرسى مطروح"];
             container.innerHTML += list.map(loc => `<div onclick="selectLocation('${loc}')" class="p-3 hover:bg-blue-50 rounded-xl cursor-pointer font-bold text-sm text-right border-b border-gray-50 last:border-0 transition-all">📍 ${loc}</div>`).join('');
         }
 
         window.filterLocationsUI = () => {
-            const egyptLocations = ["القاهرة - مدينة نصر", "القاهرة - التجمع الخامس", "القاهرة - مصر الجديدة", "القاهرة - المعادي", "القاهرة - الرحاب", "القاهرة - مدينتي", "الجيزة - 6 أكتوبر", "الجيزة - الشيخ زايد", "الجيزة - الهرم", "الجيزة - فيصل", "الجيزة - المهندسين", "الإسكندرية - سموحة", "الإسكندرية - ميامي", "الدقهلية - المنصورة", "الشرقية - الزقازيق", "الغربية - طنطا", "المنوفية - شبين الكوم", "البحيرة - دمنهور", "كفر الشيخ", "دمياط", "بور سعيد", "السويس", "الإسماعيلية", "الفيوم", "بني سويف", "المنيا", "أسيوط", "سوهاج", "قنا", "الأقصر", "أسوان", "الغردقة", "مرسى مطروح"];
+            const egyptLocations = ["القاهرة - مدينة نصر", "القاهرة - التجمع الخامس", "القاهرة - مصر الجديدة", "القاهرة - المعادي", "القاهرة - الرحاب", "القاهرة - مدينتي", "الجيزة - 6 أكتوبر", "الجيزة - الشيخ زايد", "الجيزة - الهرم", "الجيزة - فيصل", "الجيزة - المهندسين", "الإسكندرية - سموحة", "الإسكندرية - ميامي", "الدقهلية - المنصورة", "الشرقية - الزقازيق", "الغربية - طنطا", "المنوفية - شبين الكوم", "البحيرة - dمنهور", "كفر الشيخ", "دمياط", "بور سعيد", "السويس", "الإسماعيلية", "الفيوم", "بني سويف", "المنيا", "أسيوط", "سوهاج", "قنا", "الأقصر", "أسوان", "الغردقة", "مرسى مطروح"];
             const val = document.getElementById('location-search-input').value.toLowerCase();
             const filtered = egyptLocations.filter(l => l.toLowerCase().includes(val));
             renderLocationsUI(filtered);
@@ -288,7 +288,7 @@
             document.getElementById('chat-btn').onclick = () => {
                 if (!user) { window.location.href = 'login.html'; return; }
                 const adImage = getSafeImageUrl(ad.image_url);
-                window.location.href = `messages.html?seller=${ad.seller_email}&adId=${ad.id}&ad=${encodeURIComponent(ad.title)}&img=${encodeURIComponent(adImage)}&price=${ad.price}`;
+                window.location.href = `messages.html?seller=${ad.seller_email.toLowerCase()}&adId=${ad.id}&ad=${encodeURIComponent(ad.title)}&img=${encodeURIComponent(adImage)}&price=${ad.price}`;
             };
             document.getElementById('product-modal').style.display = 'flex';
             document.body.style.overflow = 'hidden';
