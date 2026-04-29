@@ -30,6 +30,7 @@
         <div class="bg-white rounded-3xl shadow-xl border border-gray-100 p-6 sm:p-10">
             <form id="add-ad-form" class="space-y-8">
 
+                <!-- 1. Photos -->
                 <section>
                     <h3 class="text-lg font-black text-gray-800 mb-4 flex items-center gap-2">📸 صور المنتج</h3>
                     <div class="grid grid-cols-3 sm:grid-cols-4 gap-3 text-center">
@@ -38,18 +39,17 @@
                             <span class="text-[10px] font-bold text-gray-400">أضف صور</span>
                             <input type="file" id="ad-images" class="hidden" multiple accept="image/*">
                         </label>
-                        <div class="aspect-square bg-gray-50 rounded-2xl border border-gray-100 flex items-center justify-center text-[10px] text-gray-300">الصورة 2</div>
-                        <div class="aspect-square bg-gray-50 rounded-2xl border border-gray-100 flex items-center justify-center text-[10px] text-gray-300">الصورة 3</div>
                     </div>
                 </section>
 
                 <hr class="border-gray-50">
 
+                <!-- 2. Ad Details -->
                 <section class="space-y-5">
                     <h3 class="text-lg font-black text-gray-800 mb-2 flex items-center gap-2">📝 تفاصيل الإعلان</h3>
                     <div>
                         <label class="text-xs font-black text-gray-600 block mb-2 mr-1 text-right">عنوان الإعلان</label>
-                        <input type="text" id="title" required placeholder="مثلاً: ايفون 13 برو ماكس بحالة الزيرو" class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 text-sm text-right">
+                        <input type="text" id="title" required placeholder="مثلاً: ايفون 13 برو ماكس بحالة الزيرو" class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm text-right">
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -65,10 +65,9 @@
                                 <option value="cars">سيارات</option>
                             </select>
                         </div>
-                        <div id="sub-category-container" class="hidden fade-in-down">
-                            <label class="text-xs font-black text-gray-600 block mb-2 mr-1 text-right">الفئة الفرعية</label>
+                        <div id="sub-category-container" class="hidden fade-in-down text-right">
+                            <label class="text-xs font-black text-gray-600 block mb-2 mr-1">الفئة الفرعية</label>
                             <select id="sub-category" class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 text-sm appearance-none text-right">
-                                <option value="">اختر الفئة الفرعية</option>
                             </select>
                         </div>
                         <div>
@@ -86,7 +85,7 @@
                 <hr class="border-gray-50">
 
                 <section class="space-y-4">
-                    <h3 class="text-lg font-black text-gray-800 mb-4 flex items-center gap-2">📍 الموقع والتواصل</h3>
+                    <h3 class="text-lg font-black text-gray-800 mb-4 flex items-center gap-2">📍 الموقع</h3>
                     <input type="text" id="location" required placeholder="المكان (مثلاً: مدينة نصر، القاهرة)" class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 text-sm text-right">
                 </section>
 
@@ -101,7 +100,6 @@
         <div class="bg-white rounded-3xl p-8 max-w-sm w-full space-y-6 animate-in zoom-in duration-300">
             <div class="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-4xl mx-auto">✓</div>
             <h3 class="text-xl font-black text-gray-800">تم الحفظ بنجاح!</h3>
-            <p class="text-sm text-gray-400 font-bold">إعلانك متاح الآن للجميع في الموقع</p>
             <button onclick="window.location.href='index.html'" class="w-full bg-gray-900 text-white py-4 rounded-2xl font-black text-sm">العودة للرئيسية</button>
         </div>
     </div>
@@ -140,23 +138,32 @@
             btn.disabled = true;
 
             const user = JSON.parse(localStorage.getItem('user'));
+
+            // قمنا بإضافة image_url بقيمة فارغة لضمان عدم حدوث خطأ إذا كان العمود مطلوباً
             const adData = {
                 title: document.getElementById('title').value,
                 main_category: mainCatSelect.value,
                 sub_category: subSelect.value,
-                price: parseFloat(document.getElementById('price').value), // تحويل لرقم
+                price: parseFloat(document.getElementById('price').value),
                 description: document.getElementById('description').value,
                 location: document.getElementById('location').value,
-                seller_email: user ? user.email : 'guest'
+                seller_email: user ? user.email : 'guest',
+                image_url: ""
             };
 
             try {
-                const { error } = await supabase.from('ads').insert([adData]);
-                if (error) throw error;
+                // محاولة الإرسال لجدول ads
+                const { data, error } = await supabase.from('ads').insert([adData]);
+
+                if (error) {
+                    console.error("Supabase Error:", error);
+                    throw new Error(error.message);
+                }
+
                 document.getElementById('success-modal').style.display = 'flex';
             } catch (err) {
-                // إظهار الخطأ الحقيقي للتشخيص
-                alert("حدث خطأ من Supabase: " + err.message);
+                // رسالة خطأ ذكية تخبرنا بالسبب الحقيقي
+                alert("حدث خطأ أثناء النشر:\n1. تأكد من إغلاق مانع الإعلانات (Adblock).\n2. تأكد من أن أسماء الأعمدة في Supabase تطابق الكود تماماً.\n\nالسبب التقني: " + err.message);
                 console.error(err);
             } finally {
                 btn.innerText = "نشر الإعلان الآن";
