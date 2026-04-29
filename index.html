@@ -95,13 +95,13 @@
                 </div>
             </div>
 
-            <!-- Search Bar - Always visible and expands on mobile -->
+            <!-- Search Bar -->
             <div class="flex flex-1 relative text-right">
                 <input type="text" id="search-input" placeholder="بتدور على إيه؟" class="w-full bg-gray-100 rounded-xl py-2 md:py-2.5 px-8 md:px-10 outline-none focus:ring-2 focus:ring-blue-500 text-[11px] md:text-sm border-none text-right">
                 <div class="absolute right-2 md:right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs md:text-sm">🔍</div>
             </div>
 
-            <!-- Auth/Desktop Section - Hidden on Mobile -->
+            <!-- Desktop Auth Section -->
             <div id="auth-section" class="hidden md:flex items-center gap-3 shrink-0">
                 <a href="login.html" class="text-xs font-black text-gray-500 hover:text-blue-600 px-3 transition-colors">دخول</a>
                 <a href="login.html" class="bg-blue-600 text-white px-5 py-2.5 rounded-xl font-black text-xs shadow-md">+ بيع دلوقتي</a>
@@ -149,8 +149,9 @@
         let selectedLocation = localStorage.getItem('userLocation') || 'كل مصر';
         let activeCategory = 'all';
         let activeSubCategory = 'الكل';
+        let searchTerm = '';
 
-        const egyptLocations = ["القاهرة - مدينة نصر", "القاهرة - التجمع الخامس", "القاهرة - مصر الجديدة", "القاهرة - المعادي", "القاهرة - الرحاب", "القاهرة - مدينتي", "الجيزة - 6 أكتوبر", "الجيزة - الشيخ زايد", "الجيزة - الهرم", "الجيزة - فيصل", "الجيزة - المهندسين", "الإسكندرية - سموحة", "الإسكندرية - ميامي", "الدقهلية - المنصورة", "الشرقية - الزقازيق", "الغربية - طنطا", "المنوفية - شبين الكوم", "البحيرة - دمنهور", "كفر الشيخ", "دمياط", "بور سعيد", "السويس", "الإسماعيلية", "الفيوم", "بني سويف", "المنيا", "أسيوط", "سوهاج", "قنا", "الأقصر", "أسوان", "الغردقة", "مرسى مطروح"];
+        const egyptLocations = ["القاهرة - مدينة نصر", "القاهرة - التجمع الخامس", "القاهرة - مصر الجديدة", "القاهرة - المعادي", "القاهرة - الرحاب", "القاهرة - مدينتي", "الجيزة - 6 أكتوبر", "الجيزة - الشيخ زايد", "الجيزة - الهرم", "الجيزة - فيصل", "الجيزة - المهندسين", "الإسكندرية - سموحة", "الإسكندرية - ميامي", "الدقهلية - المنصورة", "الشرقية - الزقازيق", "الغربية - طنطا", "المنوفية - شبين الكوم", "البحيرة - dمنهور", "كفر الشيخ", "دمياط", "بور سعيد", "السويس", "الإسماعيلية", "الفيوم", "بني سويف", "المنيا", "أسيوط", "سوهاج", "قنا", "الأقصر", "أسوان", "الغردقة", "مرسى مطروح"];
 
         document.getElementById('current-city-name').innerText = selectedLocation;
 
@@ -160,6 +161,7 @@
             if (selectedLocation !== 'كل مصر') query = query.eq('location', selectedLocation);
             if (activeCategory !== 'all') query = query.eq('main_category', activeCategory);
             if (activeSubCategory !== 'الكل') query = query.eq('sub_category', activeSubCategory);
+            if (searchTerm) query = query.ilike('title', `%${searchTerm}%`);
 
             try {
                 const { data, error } = await query.order('created_at', { ascending: false });
@@ -168,6 +170,19 @@
                 renderAds(data);
             } catch (err) { console.error(err); }
         }
+
+        // Search Logic
+        document.getElementById('search-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                searchTerm = e.target.value.trim();
+                fetchAds();
+                // Close any sub-menus if open
+                document.getElementById('sub-menu-bar').classList.remove('active');
+                document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+                activeCategory = 'all';
+                activeSubCategory = 'الكل';
+            }
+        });
 
         window.toggleLocationModal = () => {
             const m = document.getElementById('location-modal');
@@ -211,7 +226,7 @@
 
         function renderAds(ads) {
             const grid = document.getElementById('ads-grid');
-            if (!ads || ads.length === 0) { grid.innerHTML = '<p class="col-span-full text-center py-20 text-gray-400 font-bold">لا توجد إعلانات في هذا الموقع حالياً</p>'; return; }
+            if (!ads || ads.length === 0) { grid.innerHTML = '<p class="col-span-full text-center py-20 text-gray-400 font-bold">لا توجد نتائج مطابقة لبحثك في هذا الموقع</p>'; return; }
             grid.innerHTML = ads.map(ad => {
                 const img = getSafeImageUrl(ad.image_url);
                 return `
@@ -230,7 +245,6 @@
         window.openProductModal = function(id) {
             const ad = adsCache.find(a => a.id === id);
             if (!ad) return;
-
             currentAdImages = [];
             try {
                 if (ad.image_url && (ad.image_url.startsWith('[') || ad.image_url.startsWith('{'))) {
@@ -239,29 +253,21 @@
                 } else if (ad.image_url) {
                     currentAdImages = [ad.image_url];
                 }
-            } catch(e) {
-                if(ad.image_url) currentAdImages = [ad.image_url];
-            }
-
+            } catch(e) { if(ad.image_url) currentAdImages = [ad.image_url]; }
             if (currentAdImages.length === 0) currentAdImages = ["https://via.placeholder.com/800x600?text=No+Images"];
-
             currentImgIndex = 0;
             showImage(0);
-
             document.getElementById('modal-title').innerText = ad.title;
             document.getElementById('modal-price').innerText = ad.price + " ج.م";
             document.getElementById('modal-location').innerText = ad.location;
             document.getElementById('modal-desc').innerText = ad.description;
-
             document.getElementById('chat-btn').onclick = () => {
                 const user = JSON.parse(localStorage.getItem('user'));
                 if (!user) { window.location.href = 'login.html'; return; }
                 if (user.email === ad.seller_email) { alert("هذا إعلانك الخاص!"); return; }
-
                 const adImage = getSafeImageUrl(ad.image_url);
                 window.location.href = `messages.html?seller=${ad.seller_email}&adId=${ad.id}&ad=${encodeURIComponent(ad.title)}&img=${encodeURIComponent(adImage)}&price=${ad.price}`;
             };
-
             document.getElementById('product-modal').style.display = 'flex';
             document.body.style.overflow = 'hidden';
         }
@@ -278,15 +284,8 @@
             document.getElementById('photo-total').innerText = currentAdImages.length;
         }
 
-        window.nextImg = function() {
-            currentImgIndex = (currentImgIndex + 1) % currentAdImages.length;
-            showImage(currentImgIndex);
-        }
-
-        window.prevImg = function() {
-            currentImgIndex = (currentImgIndex - 1 + currentAdImages.length) % currentAdImages.length;
-            showImage(currentImgIndex);
-        }
+        window.nextImg = function() { currentImgIndex = (currentImgIndex + 1) % currentAdImages.length; showImage(currentImgIndex); }
+        window.prevImg = function() { currentImgIndex = (currentImgIndex - 1 + currentAdImages.length) % currentAdImages.length; showImage(currentImgIndex); }
 
         const cats = {
             cars: ['سيارات مستعملة', 'سيارات جديدة', 'موتوسيكلات', 'قطع غيار'],
@@ -302,7 +301,6 @@
             const bar = document.getElementById('sub-menu-bar');
             const content = document.getElementById('sub-content');
             document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-
             if (activeCategory === cat) {
                 activeCategory = 'all';
                 activeSubCategory = 'الكل';
@@ -310,12 +308,10 @@
                 fetchAds();
                 return;
             }
-
             activeCategory = cat;
             activeSubCategory = 'الكل';
             btn.classList.add('active');
             bar.classList.add('active');
-
             content.innerHTML = `
                 <button onclick="filterBySub('${cat}', 'الكل')" class="bg-white border border-blue-200 text-blue-600 px-4 py-2 rounded-full text-xs font-bold hover:bg-blue-600 hover:text-white transition-all shadow-sm">كل ${label}</button>
                 ${cats[cat].map(s => `
