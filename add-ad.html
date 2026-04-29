@@ -19,7 +19,7 @@
     <header class="bg-white p-4 border-b shadow-sm sticky top-0 z-50">
         <div class="container mx-auto flex items-center justify-between">
             <a href="index.html" class="flex items-center gap-2">
-                <div class="logo-gradient text-white w-10 h-10 flex items-center justify-center rounded-xl font-black text-xl">ر</div>
+                <div class="logo-gradient text-white w-10 h-10 flex items-center justify-center rounded-xl font-black text-xl shadow-lg">ر</div>
                 <span class="text-xl font-black tracking-tighter">روبا<span class="text-blue-600">بيكيا</span></span>
             </a>
             <h1 class="text-lg font-black text-gray-800 hidden sm:block">نشر إعلان جديد</h1>
@@ -33,18 +33,15 @@
 
                 <!-- 1. Photos -->
                 <section>
-                    <h3 class="text-lg font-black text-gray-800 mb-4 flex items-center gap-2">
-                        <span class="w-8 h-8 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center text-sm">1</span>
-                        صور المنتج
-                    </h3>
-                    <div class="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                    <h3 class="text-lg font-black text-gray-800 mb-4 flex items-center gap-2">📸 صور المنتج</h3>
+                    <div class="grid grid-cols-3 sm:grid-cols-4 gap-3 text-center">
                         <label class="aspect-square border-2 border-dashed border-gray-200 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-all group">
-                            <span class="text-2xl group-hover:scale-110 transition-transform">📸</span>
-                            <span class="text-[10px] font-bold text-gray-400 mt-1">أضف صور</span>
+                            <span class="text-2xl">📸</span>
+                            <span class="text-[10px] font-bold text-gray-400">أضف صور</span>
                             <input type="file" id="ad-images" class="hidden" multiple accept="image/*">
                         </label>
-                        <div class="aspect-square bg-gray-50 rounded-2xl border border-gray-100"></div>
-                        <div class="aspect-square bg-gray-50 rounded-2xl border border-gray-100"></div>
+                        <div class="aspect-square bg-gray-50 rounded-2xl border border-gray-100 flex items-center justify-center text-[10px] text-gray-300">الصورة 2</div>
+                        <div class="aspect-square bg-gray-50 rounded-2xl border border-gray-100 flex items-center justify-center text-[10px] text-gray-300">الصورة 3</div>
                     </div>
                 </section>
 
@@ -52,31 +49,26 @@
 
                 <!-- 2. Ad Details -->
                 <section class="space-y-5">
-                    <h3 class="text-lg font-black text-gray-800 mb-2 flex items-center gap-2">
-                        <span class="w-8 h-8 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center text-sm">2</span>
-                        تفاصيل الإعلان
-                    </h3>
+                    <h3 class="text-lg font-black text-gray-800 mb-2 flex items-center gap-2">📝 تفاصيل الإعلان</h3>
 
                     <div>
                         <label class="text-xs font-black text-gray-600 block mb-2 mr-1">عنوان الإعلان</label>
-                        <input type="text" id="title" required placeholder="مثلاً: ايفون 13 برو ماكس بحالة الزيرو"
-                               class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm">
+                        <input type="text" id="title" required placeholder="مثلاً: ايفون 13 برو ماكس بحالة الزيرو" class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm">
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                         <div>
                             <label class="text-xs font-black text-gray-600 block mb-2 mr-1">الفئة الأساسية</label>
-                            <select id="main-category" onchange="updateSubCategories()" required class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm appearance-none">
+                            <select id="main-category" required class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm appearance-none">
                                 <option value="">اختر الفئة</option>
                                 <option value="real">عقارات</option>
-                                <option value="cars">سيارات</option>
                                 <option value="elec">إلكترونيات</option>
                                 <option value="fashion">ملابس</option>
                                 <option value="home">أثاث</option>
+                                <option value="cars">سيارات</option>
                             </select>
                         </div>
 
-                        <!-- Dynamic Subcategory Dropdown -->
                         <div id="sub-category-container" class="hidden fade-in-down">
                             <label class="text-xs font-black text-gray-600 block mb-2 mr-1">الفئة الفرعية</label>
                             <select id="sub-category" class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm appearance-none">
@@ -86,15 +78,13 @@
 
                         <div>
                             <label class="text-xs font-black text-gray-600 block mb-2 mr-1">السعر (ج.م)</label>
-                            <input type="number" id="price" required placeholder="0.00"
-                                   class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm">
+                            <input type="number" id="price" required placeholder="0.00" class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm">
                         </div>
                     </div>
 
                     <div>
                         <label class="text-xs font-black text-gray-600 block mb-2 mr-1">وصف المنتج</label>
-                        <textarea id="description" rows="5" required placeholder="اكتب كل تفاصيل المنتج، حالته، مدة الاستخدام، الملحقات..."
-                                  class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm resize-none"></textarea>
+                        <textarea id="description" rows="5" required placeholder="اكتب تفاصيل المنتج..." class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm resize-none"></textarea>
                     </div>
                 </section>
 
@@ -102,72 +92,62 @@
 
                 <!-- 3. Location & Contact -->
                 <section class="space-y-4">
-                    <h3 class="text-lg font-black text-gray-800 mb-4 flex items-center gap-2">
-                        <span class="w-8 h-8 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center text-sm">3</span>
-                        الموقع والتواصل
-                    </h3>
-
-                    <div>
-                        <label class="text-xs font-black text-gray-600 block mb-2 mr-1">المكان</label>
-                        <input type="text" id="location" required placeholder="مثلاً: مدينة نصر، القاهرة"
-                               class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm">
-                    </div>
+                    <h3 class="text-lg font-black text-gray-800 mb-4 flex items-center gap-2">📍 الموقع والتواصل</h3>
+                    <input type="text" id="location" required placeholder="المكان (مثلاً: مدينة نصر، القاهرة)" class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 text-sm">
 
                     <div class="pt-2">
                         <label class="text-xs font-black text-gray-600 block mb-3 mr-1">طرق التواصل المتاحة:</label>
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                             <label class="flex items-center justify-center gap-2 p-3 bg-gray-50 rounded-2xl border border-gray-100 cursor-pointer hover:bg-white hover:border-blue-200 transition-all">
                                 <input type="checkbox" checked class="w-4 h-4 rounded text-blue-600">
-                                <span class="text-xs font-bold text-gray-700">شات</span>
+                                <span class="text-xs font-bold">شات</span>
                             </label>
                             <label class="flex items-center justify-center gap-2 p-3 bg-gray-50 rounded-2xl border border-gray-100 cursor-pointer hover:bg-white hover:border-blue-200 transition-all">
                                 <input type="checkbox" checked class="w-4 h-4 rounded text-blue-600">
-                                <span class="text-xs font-bold text-gray-700">اتصال</span>
+                                <span class="text-xs font-bold">اتصال</span>
                             </label>
                             <label class="flex items-center justify-center gap-2 p-3 bg-gray-50 rounded-2xl border border-gray-100 cursor-pointer hover:bg-white hover:border-blue-200 transition-all">
                                 <input type="checkbox" class="w-4 h-4 rounded text-blue-600">
-                                <span class="text-xs font-bold text-gray-700">واتساب</span>
+                                <span class="text-xs font-bold">واتساب</span>
                             </label>
                         </div>
                     </div>
                 </section>
 
                 <div class="pt-6">
-                    <button type="submit" id="submit-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl font-black text-lg shadow-lg shadow-blue-100 transition-all active:scale-95">
-                        نشر الإعلان الآن
-                    </button>
+                    <button type="submit" id="submit-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl font-black text-lg shadow-lg active:scale-95 transition-all">نشر الإعلان الآن</button>
                 </div>
             </form>
         </div>
     </main>
 
-    <!-- Success Modal -->
     <div id="success-modal" class="fixed inset-0 z-[1000] bg-black/60 hidden items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-white rounded-3xl p-8 max-w-sm w-full text-center space-y-6 animate-in zoom-in duration-300">
             <div class="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-4xl mx-auto">✓</div>
-            <h3 class="text-xl font-black text-gray-800">تم الحفظ في Supabase!</h3>
-            <p class="text-sm text-gray-400 font-bold">إعلانك متاح الآن للجميع في الموقع</p>
-            <button onclick="window.location.href='index.html'" class="w-full bg-gray-900 text-white py-4 rounded-2xl font-black text-sm transition-all active:scale-95">العودة للرئيسية</button>
+            <h3 class="text-xl font-black text-gray-800">تم الحفظ في Supabase بنجاح!</h3>
+            <button onclick="window.location.href='index.html'" class="w-full bg-gray-900 text-white py-4 rounded-2xl font-black text-sm">العودة للرئيسية</button>
         </div>
     </div>
 
     <script type="module">
         import { supabase } from "./supabase-config.js";
 
-        // خيارات الفئات الفرعية بدقة
+        // خيارات الفئات الفرعية المحدثة كما طلبت
         const subCategories = {
-            'real': ['شراء عقار', 'استئجار عقار', 'أرض', 'شاليهات', 'فيلة'],
-            'elec': ['هواتف / موبايلات', 'حاسوب ولابتوب', 'أدوات منزلية'],
-            'fashion': ['ملابس رجالي', 'ملابس نسائي', 'ملابس أطفال', 'أحذية', 'ساعات وإكسسوارات', 'مكياج'],
-            'cars': ['سيارات مستعملة', 'سيارات جديدة', 'موتوسيكلات', 'قطع غيار'],
-            'home': ['صالون', 'مطبخ', 'غرفة نوم', 'حديقة']
+            'real': ['شراء', 'استئجار', 'أرض', 'شاليهات', 'فيلة'],
+            'elec': ['هواتف', 'حاسوب ولابتوب', 'أدوات منزلية'],
+            'fashion': ['رجالي', 'نسائي', 'أطفال', 'أحذية', 'ساعات وإكسسوارات', 'مكياج'],
+            'home': ['صالون', 'مطبخ', 'غرفة نوم', 'حديقة'],
+            'cars': ['سيارات مستعملة', 'سيارات جديدة', 'موتوسيكلات', 'قطع غيار']
         };
 
-        window.updateSubCategories = function() {
-            const mainCat = document.getElementById('main-category').value;
-            const subContainer = document.getElementById('sub-category-container');
-            const subSelect = document.getElementById('sub-category');
+        const mainCatSelect = document.getElementById('main-category');
+        const subContainer = document.getElementById('sub-category-container');
+        const subSelect = document.getElementById('sub-category');
 
+        // وظيفة تحديث الفئات الفرعية
+        mainCatSelect.addEventListener('change', () => {
+            const mainCat = mainCatSelect.value;
             if (mainCat && subCategories[mainCat]) {
                 subSelect.innerHTML = '<option value="">اختر الفئة الفرعية</option>' +
                     subCategories[mainCat].map(sub => `<option value="${sub}">${sub}</option>`).join('');
@@ -175,20 +155,19 @@
             } else {
                 subContainer.classList.add('hidden');
             }
-        };
+        });
 
         document.getElementById('add-ad-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submit-btn');
-            btn.innerText = "جاري الاتصال بـ Supabase...";
+            btn.innerText = "جاري الحفظ في Supabase...";
             btn.disabled = true;
 
             const user = JSON.parse(localStorage.getItem('user'));
-
             const adData = {
                 title: document.getElementById('title').value,
-                main_category: document.getElementById('main-category').value,
-                sub_category: document.getElementById('sub-category').value,
+                main_category: mainCatSelect.value,
+                sub_category: subSelect.value,
                 price: document.getElementById('price').value,
                 description: document.getElementById('description').value,
                 location: document.getElementById('location').value,
@@ -197,12 +176,12 @@
             };
 
             try {
-                const { data, error } = await supabase.from('ads').insert([adData]);
+                const { error } = await supabase.from('ads').insert([adData]);
                 if (error) throw error;
                 document.getElementById('success-modal').style.display = 'flex';
-            } catch (error) {
-                alert("خطأ: تأكد من ضبط جدول ads في Supabase");
-                console.error(error);
+            } catch (err) {
+                alert("تأكد من إعدادات Supabase وجدول ads");
+                console.error(err);
             } finally {
                 btn.innerText = "نشر الإعلان الآن";
                 btn.disabled = false;

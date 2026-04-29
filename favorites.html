@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المفضلة - روبابيكيا</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Cairo', sans-serif; background-color: #f8fafc; padding-bottom: 80px; }
+        .logo-gradient { background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="bg-white p-4 border-b shadow-sm sticky top-0 z-50">
+        <div class="container mx-auto flex items-center justify-between">
+            <a href="index.html" class="flex items-center gap-2">
+                <div class="logo-gradient text-white w-9 h-9 flex items-center justify-center rounded-xl font-black text-lg">ر</div>
+                <span class="text-lg font-black tracking-tighter">روبا<span class="text-blue-600">بيكيا</span></span>
+            </a>
+            <h1 class="text-lg font-black text-gray-800">المفضلة</h1>
+            <div id="user-avatar" class="w-9 h-9 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center font-black text-xs border border-white">؟</div>
+        </div>
+    </header>
+
+    <!-- Content -->
+    <main class="container mx-auto p-4 py-8">
+        <div id="favorites-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            <!-- سيتم عرض الإعلانات المفضلة هنا -->
+            <div id="empty-msg" class="col-span-full py-20 text-center flex flex-col items-center gap-4">
+                <span class="text-6xl">❤</span>
+                <p class="font-black text-gray-400">قائمة المفضلة فارغة حالياً</p>
+                <a href="index.html" class="text-blue-600 font-bold text-sm underline">تصفح الإعلانات الآن</a>
+            </div>
+        </div>
+    </main>
+
+    <!-- Mobile Bottom Navigation -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t flex items-center justify-around py-3 z-50 shadow-lg">
+        <a href="index.html" class="flex flex-col items-center gap-1 text-gray-400">
+            <span class="text-xl">🏠</span>
+            <span class="text-[9px] font-black">الرئيسية</span>
+        </a>
+        <a href="favorites.html" class="flex flex-col items-center gap-1 text-blue-600">
+            <span class="text-xl">❤</span>
+            <span class="text-[9px] font-black">المفضلة</span>
+        </a>
+        <a href="add-ad.html" class="flex flex-col items-center -mt-8 bg-blue-600 text-white w-14 h-14 rounded-full border-4 border-gray-50 flex items-center justify-center shadow-lg active:scale-90 transition-all">
+            <span class="text-2xl font-bold">+</span>
+        </a>
+        <a href="messages.html" class="flex flex-col items-center gap-1 text-gray-400">
+            <span class="text-xl">💬</span>
+            <span class="text-[9px] font-black">الرسائل</span>
+        </a>
+        <a href="login.html" class="flex flex-col items-center gap-1 text-gray-400">
+            <span class="text-xl">👤</span>
+            <span class="text-[9px] font-black">حسابي</span>
+        </a>
+    </nav>
+
+    <script>
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (user) document.getElementById('user-avatar').innerText = user.name.charAt(0).toUpperCase();
+    </script>
+</body>
+</html>

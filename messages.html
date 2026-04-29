@@ -16,14 +16,13 @@
 </head>
 <body class="min-h-screen flex flex-col overflow-hidden">
 
-    <!-- Header (Hidden on Mobile Chat View) -->
     <header id="main-header" class="bg-white p-4 border-b shadow-sm z-50">
         <div class="container mx-auto flex items-center justify-between">
             <a href="index.html" class="flex items-center gap-2">
                 <div class="logo-gradient text-white w-9 h-9 flex items-center justify-center rounded-xl font-black text-lg">ر</div>
                 <span class="text-lg font-black tracking-tighter">روبا<span class="text-blue-600">بيكيا</span></span>
             </a>
-            <div class="w-9 h-9 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center font-black text-xs border border-white shadow-sm">ح</div>
+            <div id="current-user-avatar" class="w-9 h-9 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center font-black text-xs border border-white shadow-sm">؟</div>
         </div>
     </header>
 
@@ -33,167 +32,146 @@
             <!-- Conversations List -->
             <div id="conv-list" class="w-full md:w-96 border-l border-gray-100 flex flex-col bg-gray-50/30">
                 <div class="p-6 bg-white border-b">
-                    <h2 class="text-xl font-black text-gray-800 mb-4">الرسائل</h2>
-                    <div class="relative">
-                        <input type="text" placeholder="ابحث في المحادثات..." class="w-full bg-gray-100 border-none rounded-2xl py-3 px-10 text-xs outline-none focus:ring-2 focus:ring-blue-500">
-                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
-                    </div>
+                    <h2 class="text-xl font-black text-gray-800">الرسائل</h2>
                 </div>
-                <div class="flex-1 overflow-y-auto no-scrollbar">
-                    <!-- Item 1 -->
-                    <div onclick="openChat('أحمد محمد', 'موبايل شاومي نوت 11', '6,500 ج.م')" class="p-5 flex items-center gap-4 cursor-pointer hover:bg-white transition-all border-b border-gray-50 bg-blue-50/50">
-                        <div class="relative shrink-0">
-                            <div class="w-14 h-14 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center font-black text-xl">أ</div>
-                            <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <div class="flex justify-between items-center mb-1">
-                                <span class="font-black text-sm text-gray-800">أحمد محمد</span>
-                                <span class="text-[10px] text-blue-500 font-bold">الآن</span>
-                            </div>
-                            <p class="text-xs text-gray-500 truncate font-bold">لسه الموبايل متاح للبيع؟</p>
-                        </div>
-                    </div>
-                    <!-- Item 2 -->
-                    <div onclick="openChat('سارة محمود', 'كوتشي نايك أوريجينال', '1,200 ج.م')" class="p-5 flex items-center gap-4 cursor-pointer hover:bg-white transition-all border-b border-gray-50">
-                        <div class="w-14 h-14 bg-purple-100 text-purple-600 rounded-2xl flex items-center justify-center font-black text-xl">س</div>
-                        <div class="flex-1 min-w-0">
-                            <div class="flex justify-between items-center mb-1">
-                                <span class="font-black text-sm text-gray-800">سارة محمود</span>
-                                <span class="text-[10px] text-gray-400">أمس</span>
-                            </div>
-                            <p class="text-xs text-gray-400 truncate">تمام، نتمنى يكون في نصيب.</p>
-                        </div>
-                    </div>
+                <div id="conversations-container" class="flex-1 overflow-y-auto no-scrollbar">
+                    <!-- سيتم ملء المحادثات من Firestore -->
+                    <div class="p-10 text-center text-gray-400 text-xs font-bold">جاري تحميل المحادثات...</div>
                 </div>
             </div>
 
             <!-- Chat Window -->
             <div id="chat-window" class="hidden md:flex flex-1 flex-col bg-white">
-                <!-- Chat Header -->
                 <div class="p-4 border-b flex items-center justify-between bg-white z-10">
                     <div class="flex items-center gap-3">
                         <button onclick="backToList()" class="md:hidden text-gray-400 p-2">➡</button>
-                        <div id="active-user-avatar" class="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-black text-sm">أ</div>
+                        <div id="active-user-avatar" class="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-black text-sm">؟</div>
                         <div>
-                            <h3 id="active-user-name" class="font-black text-sm text-gray-800 leading-none">أحمد محمد</h3>
+                            <h3 id="active-user-name" class="font-black text-sm text-gray-800 leading-none">اختر محادثة</h3>
                             <span class="text-[9px] text-green-500 font-bold">متصل الآن</span>
                         </div>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <button class="w-9 h-9 flex items-center justify-center rounded-xl bg-gray-50 text-gray-400 hover:text-blue-600 transition-all">📞</button>
-                        <button class="w-9 h-9 flex items-center justify-center rounded-xl bg-gray-50 text-gray-400 hover:text-blue-600 transition-all">⋮</button>
-                    </div>
                 </div>
 
-                <!-- Product Context Bar -->
-                <div id="product-context" class="px-4 py-2 bg-blue-50/50 border-b border-blue-100 flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-white rounded-lg border border-blue-100 overflow-hidden shrink-0">
-                            <img src="https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&w=100&q=80" class="w-full h-full object-cover">
-                        </div>
-                        <div class="flex flex-col">
-                            <span id="context-product-name" class="text-[10px] font-black text-gray-700">موبايل شاومي نوت 11</span>
-                            <span id="context-product-price" class="text-[10px] font-black text-blue-600">6,500 ج.م</span>
-                        </div>
-                    </div>
-                    <button class="text-[10px] font-black text-blue-600 bg-white px-3 py-1 rounded-lg border border-blue-200">عرض الإعلان</button>
-                </div>
-
-                <!-- Messages -->
-                <div id="messages-box" class="flex-1 overflow-y-auto p-6 space-y-6 no-scrollbar bg-gray-50/20">
-                    <!-- Date separator -->
-                    <div class="flex justify-center"><span class="text-[9px] bg-gray-100 text-gray-400 px-4 py-1 rounded-full font-black uppercase">اليوم</span></div>
-
-                    <div class="flex items-end gap-3 ml-12">
-                        <div class="bg-white border border-gray-100 p-4 rounded-2xl rounded-br-none shadow-sm max-w-[85%]">
-                            <p class="text-sm text-gray-800 leading-relaxed font-bold">السلام عليكم، لسه الموبايل متاح؟ ومكانه فين بالظبط في فيصل؟</p>
-                            <span class="text-[9px] text-gray-400 mt-2 block text-left">١٢:٣٨ م</span>
-                        </div>
-                    </div>
-
-                    <div class="flex items-end gap-3 flex-row-reverse mr-12">
-                        <div class="bg-blue-600 p-4 rounded-2xl rounded-bl-none shadow-lg max-w-[85%] text-white">
-                            <p class="text-sm leading-relaxed font-bold">وعليكم السلام، أيوه يا فندم لسه موجود. أنا موجود عند الطالبية فيصل.</p>
-                            <span class="text-[9px] text-blue-200 mt-2 block">١٢:٣٩ م</span>
-                        </div>
-                    </div>
+                <!-- Messages Area -->
+                <div id="messages-box" class="flex-1 overflow-y-auto p-6 space-y-4 no-scrollbar bg-gray-50/20">
+                    <div class="flex justify-center py-20 text-gray-300 font-bold">ابدأ المحادثة الآن</div>
                 </div>
 
                 <!-- Input Area -->
                 <div class="p-4 bg-white border-t">
-                    <form onsubmit="sendMessage(event)" class="flex items-center gap-3">
-                        <button type="button" class="w-10 h-10 flex items-center justify-center rounded-xl text-gray-400 hover:bg-gray-50 transition-all text-xl">📎</button>
+                    <form id="chat-form" class="flex items-center gap-3">
                         <input type="text" id="msg-input" placeholder="اكتب رسالتك هنا..."
-                               class="flex-1 bg-gray-100 border-none rounded-2xl py-3.5 px-5 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all">
-                        <button type="submit" class="bg-blue-600 text-white w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all active:scale-90">
+                               class="flex-1 bg-gray-100 border-none rounded-2xl py-3.5 px-5 text-sm outline-none focus:ring-2 focus:ring-blue-500">
+                        <button type="submit" class="bg-blue-600 text-white w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg active:scale-90 transition-all">
                             <span class="text-xl">✈</span>
                         </button>
                     </form>
                 </div>
             </div>
 
-            <!-- Empty State (Desktop Only) -->
+            <!-- Empty State -->
             <div id="empty-chat" class="hidden md:flex flex-1 flex-col items-center justify-center text-gray-300 bg-white">
                 <div class="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center text-5xl mb-4">💬</div>
                 <p class="font-black text-gray-400">اختر محادثة للبدء في البيع أو الشراء</p>
             </div>
-
         </div>
     </main>
 
-    <script>
-        function openChat(name, product, price) {
-            const chatWindow = document.getElementById('chat-window');
-            const emptyChat = document.getElementById('empty-chat');
-            const convList = document.getElementById('conv-list');
-            const header = document.getElementById('main-header');
+    <script type="module">
+        import { db, collection, addDoc, query, orderBy, onSnapshot, where, serverTimestamp } from "./firebase-config.js";
 
-            document.getElementById('active-user-name').innerText = name;
-            document.getElementById('active-user-avatar').innerText = name.charAt(0);
-            document.getElementById('context-product-name').innerText = product;
-            document.getElementById('context-product-price').innerText = price;
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (!user) window.location.href = 'login.html';
+
+        document.getElementById('current-user-avatar').innerText = user.name.charAt(0).toUpperCase();
+
+        let currentChatId = null;
+
+        // دالة لفتح محادثة معينة
+        window.openChat = function(chatId, otherPartyName) {
+            currentChatId = chatId;
+            document.getElementById('active-user-name').innerText = otherPartyName;
+            document.getElementById('active-user-avatar').innerText = otherPartyName.charAt(0);
 
             if (window.innerWidth < 768) {
-                convList.classList.add('hidden');
-                header.classList.add('hidden');
-                chatWindow.classList.remove('hidden');
-                chatWindow.classList.add('flex');
+                document.getElementById('conv-list').classList.add('hidden');
+                document.getElementById('main-header').classList.add('hidden');
+                document.getElementById('chat-window').classList.remove('hidden');
+                document.getElementById('chat-window').classList.add('flex');
             } else {
-                chatWindow.classList.remove('hidden');
-                chatWindow.classList.add('flex');
-                emptyChat.classList.add('hidden');
+                document.getElementById('chat-window').classList.remove('hidden');
+                document.getElementById('chat-window').classList.add('flex');
+                document.getElementById('empty-chat').classList.add('hidden');
             }
-        }
 
-        function backToList() {
+            loadMessages(chatId);
+        };
+
+        window.backToList = function() {
             document.getElementById('conv-list').classList.remove('hidden');
             document.getElementById('main-header').classList.remove('hidden');
             document.getElementById('chat-window').classList.add('hidden');
             document.getElementById('chat-window').classList.remove('flex');
+        };
+
+        // تحميل الرسائل من Firestore
+        function loadMessages(chatId) {
+            const q = query(collection(db, "chats", chatId, "messages"), orderBy("timestamp", "asc"));
+            onSnapshot(q, (snapshot) => {
+                const box = document.getElementById('messages-box');
+                box.innerHTML = '';
+                snapshot.forEach((doc) => {
+                    const msg = doc.data();
+                    const isMe = msg.sender === user.email;
+                    const msgHtml = `
+                        <div class="flex items-end gap-3 ${isMe ? 'flex-row-reverse mr-12' : 'ml-12'}">
+                            <div class="${isMe ? 'bg-blue-600 text-white rounded-bl-none' : 'bg-white border border-gray-100 text-gray-800 rounded-br-none'} p-4 rounded-2xl shadow-sm max-w-[85%]">
+                                <p class="text-sm leading-relaxed font-bold">${msg.text}</p>
+                            </div>
+                        </div>
+                    `;
+                    box.insertAdjacentHTML('beforeend', msgHtml);
+                });
+                box.scrollTop = box.scrollHeight;
+            });
         }
 
-        function sendMessage(e) {
+        // إرسال رسالة جديدة
+        document.getElementById('chat-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const input = document.getElementById('msg-input');
-            if (!input.value.trim()) return;
+            const text = input.value.trim();
+            if (!text || !currentChatId) return;
 
-            const box = document.getElementById('messages-box');
-            const now = new Date();
-            const time = now.getHours() + ":" + now.getMinutes().toString().padStart(2, '0') + " م";
+            try {
+                await addDoc(collection(db, "chats", currentChatId, "messages"), {
+                    text: text,
+                    sender: user.email,
+                    timestamp: serverTimestamp()
+                });
+                input.value = '';
+            } catch (err) {
+                console.error("Error sending message:", err);
+            }
+        });
 
-            const msgHtml = `
-                <div class="flex items-end gap-3 flex-row-reverse mr-12 animate-in slide-in-from-left duration-300">
-                    <div class="bg-blue-600 p-4 rounded-2xl rounded-bl-none shadow-lg max-w-[85%] text-white">
-                        <p class="text-sm leading-relaxed font-bold">${input.value}</p>
-                        <span class="text-[9px] text-blue-200 mt-2 block">${time}</span>
+        // محاكاة تحميل قائمة المحادثات (يجب ربطها بجدول المحادثات لاحقاً)
+        function loadConversations() {
+            const container = document.getElementById('conversations-container');
+            // محادثة تجريبية (يجب أن تنشأ عند ضغط المشتري على "دردشة" في الإعلان)
+            container.innerHTML = `
+                <div onclick="openChat('demo_chat_1', 'أحمد محمد')" class="p-5 flex items-center gap-4 cursor-pointer hover:bg-white transition-all border-b border-gray-50">
+                    <div class="w-14 h-14 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center font-black text-xl">أ</div>
+                    <div class="flex-1">
+                        <div class="flex justify-between items-center"><span class="font-black text-sm text-gray-800">أحمد محمد</span></div>
+                        <p class="text-xs text-gray-400 truncate">اضغط للبدء في مراسلته</p>
                     </div>
                 </div>
             `;
-            box.insertAdjacentHTML('beforeend', msgHtml);
-            input.value = '';
-            box.scrollTop = box.scrollHeight;
         }
+
+        loadConversations();
     </script>
 </body>
 </html>
