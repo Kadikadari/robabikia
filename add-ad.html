@@ -64,7 +64,7 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                         <div>
                             <label class="text-xs font-black text-gray-600 block mb-2 mr-1">الفئة الأساسية</label>
-                            <select id="main-category" required class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 text-sm appearance-none">
+                            <select id="main-category" required class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 text-sm">
                                 <option value="">اختر الفئة</option>
                                 <option value="real">عقارات</option>
                                 <option value="elec">إلكترونيات</option>
@@ -79,7 +79,7 @@
                         </div>
                         <div id="sub-category-container" class="hidden">
                             <label class="text-xs font-black text-gray-600 block mb-2 mr-1">الفئة الفرعية</label>
-                            <select id="sub-category" class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 text-sm appearance-none"></select>
+                            <select id="sub-category" class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 text-sm"></select>
                         </div>
                         <div>
                             <label class="text-xs font-black text-gray-600 block mb-2 mr-1">السعر (ج.م)</label>
@@ -93,11 +93,11 @@
                 </section>
 
                 <section class="space-y-5">
-                    <h3 class="text-lg font-black text-gray-800 mb-2">📞 خيارات التواصل (اختيارية)</h3>
+                    <h3 class="text-lg font-black text-gray-800 mb-2">📞 معلومات التواصل</h3>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                         <div>
                             <label class="text-xs font-black text-gray-600 block mb-2 mr-1">رقم الهاتف</label>
-                            <input type="tel" id="phone" placeholder="01xxxxxxxxx" class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 text-sm text-right">
+                            <input type="tel" id="phone" required placeholder="01xxxxxxxxx" class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 text-sm text-right">
                         </div>
                         <div>
                             <label class="text-xs font-black text-gray-600 block mb-2 mr-1">رقم الواتساب</label>
@@ -227,9 +227,12 @@
                 container.appendChild(div);
             });
             newFiles.forEach((file, i) => {
-                const url = URL.createObjectURL(file);
-                const div = createPreviewElement(url, () => { newFiles.splice(i, 1); renderPreviews(); });
-                container.appendChild(div);
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const div = createPreviewElement(e.target.result, () => { newFiles.splice(i, 1); renderPreviews(); });
+                    container.appendChild(div);
+                };
+                reader.readAsDataURL(file);
             });
             document.getElementById('photo-count').innerText = `${existingImages.length + newFiles.length} / 17`;
         }
@@ -237,7 +240,7 @@
         function createPreviewElement(src, onRemove) {
             const div = document.createElement('div');
             div.className = "relative aspect-square rounded-2xl border overflow-hidden shadow-sm bg-gray-50";
-            div.innerHTML = `<img src="${src}" class="w-full h-full object-cover"><button type="button" class="absolute top-1 right-1 bg-red-500 text-white w-6 h-6 rounded-full text-xs flex items-center justify-center">✕</button>`;
+            div.innerHTML = `<img src="${src}" class="w-full h-full object-cover"><button type="button" class="absolute top-1 right-1 bg-red-500 text-white w-6 h-6 rounded-full text-xs flex items-center justify-center shadow-md">✕</button>`;
             div.querySelector('button').onclick = onRemove;
             return div;
         }
@@ -268,12 +271,12 @@
         document.getElementById('ad-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submit-btn');
-            btn.disabled = true; btn.innerText = "جاري الحفظ...";
+            btn.disabled = true; btn.innerText = "جاري الحفظ وضغط الصور...";
             try {
                 let finalImages = [...existingImages];
                 for (let file of newFiles) {
                     const compressed = await compressImage(file);
-                    const name = `ad-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.jpg`;
+                    const name = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}.jpg`;
                     const { error: uploadError } = await supabase.storage.from('ad-images').upload(name, compressed);
                     if (uploadError) throw uploadError;
                     const { data } = supabase.storage.from('ad-images').getPublicUrl(name);
@@ -285,14 +288,20 @@
                     sub_category: document.getElementById('sub-category').value,
                     price: parseFloat(document.getElementById('price').value),
                     description: document.getElementById('description').value,
-                    phone: document.getElementById('phone').value || null,
-                    whatsapp: document.getElementById('whatsapp').value || null,
+                    phone: document.getElementById('phone').value,
+                    whatsapp: document.getElementById('whatsapp').value,
                     location: document.getElementById('location').value,
                     image_url: JSON.stringify(finalImages)
                 };
                 let error;
-                if (editId) { const { error: err } = await supabase.from('ads').update(adData).eq('id', editId); error = err; }
-                else { adData.seller_email = user.email.toLowerCase(); const { error: err } = await supabase.from('ads').insert([adData]); error = err; }
+                if (editId) {
+                    const { error: err } = await supabase.from('ads').update(adData).eq('id', editId);
+                    error = err;
+                } else {
+                    adData.seller_email = user.email.toLowerCase();
+                    const { error: err } = await supabase.from('ads').insert([adData]);
+                    error = err;
+                }
                 if (error) throw error;
                 document.getElementById('success-modal').style.display = 'flex';
             } catch (err) { alert("خطأ في النشر: " + err.message); btn.disabled = false; btn.innerText = "حاول مرة أخرى"; }
