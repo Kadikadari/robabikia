@@ -30,7 +30,6 @@
         <div class="bg-white rounded-3xl shadow-xl border border-gray-100 p-6 sm:p-10">
             <form id="add-ad-form" class="space-y-8">
 
-                <!-- 1. Photos (UI) -->
                 <section>
                     <h3 class="text-lg font-black text-gray-800 mb-4 flex items-center gap-2">📸 صور المنتج</h3>
                     <div class="grid grid-cols-3 sm:grid-cols-4 gap-3 text-center">
@@ -44,18 +43,17 @@
 
                 <hr class="border-gray-50">
 
-                <!-- 2. Ad Details -->
                 <section class="space-y-5">
                     <h3 class="text-lg font-black text-gray-800 mb-2 flex items-center gap-2">📝 تفاصيل الإعلان</h3>
                     <div>
                         <label class="text-xs font-black text-gray-600 block mb-2 mr-1">عنوان الإعلان</label>
-                        <input type="text" id="title" required placeholder="مثلاً: ايفون 13 برو ماكس بحالة الزيرو" class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm text-right">
+                        <input type="text" id="title" required placeholder="عنوان جذاب للمنتج" class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm">
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                         <div>
-                            <label class="text-xs font-black text-gray-600 block mb-2 mr-1 text-right">الفئة الأساسية</label>
-                            <select id="main-category" required class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 text-sm appearance-none text-right">
+                            <label class="text-xs font-black text-gray-600 block mb-2 mr-1">الفئة الأساسية</label>
+                            <select id="main-category" required class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 text-sm appearance-none">
                                 <option value="">اختر الفئة</option>
                                 <option value="real">عقارات</option>
                                 <option value="elec">إلكترونيات</option>
@@ -66,18 +64,18 @@
                             </select>
                         </div>
                         <div id="sub-category-container" class="hidden fade-in-down">
-                            <label class="text-xs font-black text-gray-600 block mb-2 mr-1 text-right">الفئة الفرعية</label>
-                            <select id="sub-category" class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 text-sm appearance-none text-right">
+                            <label class="text-xs font-black text-gray-600 block mb-2 mr-1">الفئة الفرعية</label>
+                            <select id="sub-category" class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 text-sm appearance-none">
                             </select>
                         </div>
                         <div>
-                            <label class="text-xs font-black text-gray-600 block mb-2 mr-1 text-right">السعر (ج.م)</label>
+                            <label class="text-xs font-black text-gray-600 block mb-2 mr-1">السعر (ج.م)</label>
                             <input type="number" id="price" required placeholder="0.00" class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 text-sm text-right">
                         </div>
                     </div>
 
                     <div>
-                        <label class="text-xs font-black text-gray-600 block mb-2 mr-1 text-right">وصف المنتج</label>
+                        <label class="text-xs font-black text-gray-600 block mb-2 mr-1">وصف المنتج</label>
                         <textarea id="description" rows="5" required placeholder="اكتب تفاصيل المنتج..." class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 text-sm resize-none text-right"></textarea>
                     </div>
                 </section>
@@ -86,7 +84,7 @@
 
                 <section class="space-y-4">
                     <h3 class="text-lg font-black text-gray-800 mb-4 flex items-center gap-2">📍 الموقع</h3>
-                    <input type="text" id="location" required placeholder="المكان (مثلاً: مدينة نصر، القاهرة)" class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 text-sm text-right">
+                    <input type="text" id="location" required placeholder="المكان (مثلاً: مدينة نصر، القاهرة)" class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 text-sm">
                 </section>
 
                 <div class="pt-6">
@@ -100,8 +98,7 @@
         <div class="bg-white rounded-3xl p-8 max-w-sm w-full space-y-6 animate-in zoom-in duration-300">
             <div class="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-4xl mx-auto">✓</div>
             <h3 class="text-xl font-black text-gray-800">تم الحفظ بنجاح!</h3>
-            <p class="text-sm text-gray-400 font-bold">إعلانك متاح الآن للجميع في الموقع</p>
-            <button onclick="window.location.href='index.html'" class="w-full bg-gray-900 text-white py-4 rounded-2xl font-black text-sm transition-all active:scale-95">العودة للرئيسية</button>
+            <button onclick="window.location.href='index.html'" class="w-full bg-gray-900 text-white py-4 rounded-2xl font-black text-sm">العودة للرئيسية</button>
         </div>
     </div>
 
@@ -140,28 +137,26 @@
 
             const user = JSON.parse(localStorage.getItem('user'));
 
+            // إرسال كافة الحقول بدقة لتجنب أخطاء قاعدة البيانات
             const adData = {
                 title: document.getElementById('title').value,
                 main_category: mainCatSelect.value,
                 sub_category: subSelect.value || "",
-                price: parseFloat(document.getElementById('price').value),
+                price: parseFloat(document.getElementById('price').value) || 0,
                 description: document.getElementById('description').value,
                 location: document.getElementById('location').value,
                 seller_email: user ? user.email : 'guest',
-                image_url: ""
+                image_url: "" // إرسال حقل الصورة لضمان التوافق
             };
 
             try {
                 const { error } = await supabase.from('ads').insert([adData]);
 
-                if (error) {
-                    console.error("Supabase Error:", error);
-                    throw new Error(error.message);
-                }
+                if (error) throw error;
 
                 document.getElementById('success-modal').style.display = 'flex';
             } catch (err) {
-                alert("حدث خطأ تقني:\n1. أغلق مانع الإعلانات (Adblock) إذا كان مفعلاً.\n2. تأكد من أنك تفتح الموقع من رابط Vercel (https).\n\nالسبب: " + err.message);
+                alert("خطأ تقني من Supabase: " + err.message + "\n\nنصيحة: تأكد من أن الرابط والمفتاح في supabase-config.js من نفس المشروع.");
                 console.error(err);
             } finally {
                 btn.innerText = "نشر الإعلان الآن";
