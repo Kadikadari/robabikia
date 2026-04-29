@@ -15,7 +15,6 @@
 </head>
 <body class="min-h-screen flex flex-col">
 
-    <!-- Header (Simplified) -->
     <header class="bg-white p-4 border-b flex justify-center">
         <a href="index.html" class="flex items-center gap-2">
             <div class="logo-gradient text-white w-10 h-10 flex items-center justify-center rounded-xl font-black text-xl shadow-lg">ر</div>
@@ -23,24 +22,19 @@
         </a>
     </header>
 
-    <!-- Main Content -->
     <main class="flex-1 flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-md rounded-3xl shadow-xl border border-gray-100 overflow-hidden form-container">
-
-            <!-- Tabs -->
             <div class="flex border-b">
                 <button id="login-tab" onclick="switchTab('login')" class="flex-1 py-4 text-sm font-black transition-all border-b-2 border-blue-600 text-blue-600">تسجيل الدخول</button>
                 <button id="signup-tab" onclick="switchTab('signup')" class="flex-1 py-4 text-sm font-black text-gray-400 border-b-2 border-transparent hover:text-gray-600 transition-all">إنشاء حساب جديد</button>
             </div>
 
-            <!-- Login Form -->
             <div id="login-form" class="p-8">
                 <div class="text-center mb-8">
                     <h2 class="text-2xl font-black text-gray-800">حمداً لله على سلامتك!</h2>
                     <p class="text-xs text-gray-400 font-bold mt-1">سجل دخولك عشان تبدأ تبيع وتشتري</p>
                 </div>
-
-                <form id="actual-login-form" onsubmit="handleLogin(event)" class="space-y-4">
+                <form id="actual-login-form" class="space-y-4">
                     <div>
                         <label class="text-xs font-black text-gray-600 block mb-2 mr-1">البريد الإلكتروني</label>
                         <input type="email" id="login-email" required placeholder="example@mail.com" class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm text-right">
@@ -50,37 +44,19 @@
                             <label class="text-xs font-black text-gray-600 mr-1">كلمة المرور</label>
                             <a href="#" class="text-[10px] font-bold text-blue-600 hover:underline">نسيت كلمة السر؟</a>
                         </div>
-                        <input type="password" required placeholder="••••••••" class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm text-right">
+                        <input type="password" id="login-password" required placeholder="••••••••" class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm text-right">
                     </div>
+                    <p id="login-error" class="text-red-500 text-[10px] font-bold hidden text-center"></p>
                     <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl font-black text-sm shadow-lg shadow-blue-100 transition-all active:scale-95 mt-6">دخول</button>
                 </form>
-
-                <div class="mt-8 flex items-center gap-4 text-gray-300">
-                    <div class="flex-1 h-[1px] bg-gray-100"></div>
-                    <span class="text-[10px] font-bold">أو عن طريق</span>
-                    <div class="flex-1 h-[1px] bg-gray-100"></div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-3 mt-6">
-                    <button onclick="socialLogin('جوجل')" class="flex items-center justify-center gap-2 border border-gray-100 py-3 rounded-2xl hover:bg-gray-50 transition-all">
-                        <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5" alt="google">
-                        <span class="text-[10px] font-black">جوجل</span>
-                    </button>
-                    <button onclick="socialLogin('فيسبوك')" class="flex items-center justify-center gap-2 border border-gray-100 py-3 rounded-2xl hover:bg-gray-50 transition-all">
-                        <img src="https://www.svgrepo.com/show/475647/facebook-color.svg" class="w-5 h-5" alt="facebook">
-                        <span class="text-[10px] font-black">فيسبوك</span>
-                    </button>
-                </div>
             </div>
 
-            <!-- Signup Form (Updated with Email field) -->
             <div id="signup-form" class="p-8 hidden">
                 <div class="text-center mb-8">
                     <h2 class="text-2xl font-black text-gray-800">أهلاً بيك في عيلتنا!</h2>
                     <p class="text-xs text-gray-400 font-bold mt-1">أنشئ حسابك في ثواني وابدأ رحلتك معنا</p>
                 </div>
-
-                <form onsubmit="handleSignup(event)" class="space-y-4">
+                <form id="actual-signup-form" class="space-y-4">
                     <div>
                         <label class="text-xs font-black text-gray-600 block mb-2 mr-1">الاسم بالكامل</label>
                         <input type="text" id="signup-name" required placeholder="مثلاً: أحمد محمد" class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm text-right">
@@ -91,23 +67,21 @@
                     </div>
                     <div>
                         <label class="text-xs font-black text-gray-600 block mb-2 mr-1">كلمة المرور</label>
-                        <input type="password" required placeholder="••••••••" class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm text-right">
+                        <input type="password" id="signup-password" required placeholder="••••••••" class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm text-right">
                     </div>
-                    <p class="text-[10px] text-gray-400 text-center px-4">بإنشاء حساب، أنت توافق على <a href="#" class="text-blue-600 underline">شروط الاستخدام</a> و <a href="#" class="text-blue-600 underline">سياسة الخصوصية</a></p>
+                    <p id="signup-error" class="text-red-500 text-[10px] font-bold hidden text-center"></p>
                     <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl font-black text-sm shadow-lg shadow-blue-100 transition-all active:scale-95 mt-6">إنشاء حساب</button>
                 </form>
             </div>
-
         </div>
     </main>
 
-    <!-- Footer -->
-    <footer class="p-6 text-center text-gray-400 text-[10px] font-bold">
-        جميع الحقوق محفوظة © 2024 روبابيكيا
-    </footer>
+    <footer class="p-6 text-center text-gray-400 text-[10px] font-bold">جميع الحقوق محفوظة © 2024 روبابيكيا</footer>
 
-    <script>
-        function switchTab(type) {
+    <script type="module">
+        import { auth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "./firebase-config.js";
+
+        window.switchTab = function(type) {
             const loginForm = document.getElementById('login-form');
             const signupForm = document.getElementById('signup-form');
             const loginTab = document.getElementById('login-tab');
@@ -130,36 +104,38 @@
             }
         }
 
-        function handleLogin(e) {
+        document.getElementById('actual-login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('login-email').value;
-            const userData = {
-                name: email.split('@')[0] || 'مستخدم روبابيكيا',
-                isLoggedIn: true
-            };
-            localStorage.setItem('user', JSON.stringify(userData));
-            window.location.href = 'index.html';
-        }
+            const password = document.getElementById('login-password').value;
+            const errorEl = document.getElementById('login-error');
 
-        function handleSignup(e) {
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                localStorage.setItem('user', JSON.stringify({ name: email.split('@')[0], email: email }));
+                window.location.href = 'index.html';
+            } catch (error) {
+                errorEl.innerText = "خطأ في تسجيل الدخول: تأكد من البيانات";
+                errorEl.classList.remove('hidden');
+            }
+        });
+
+        document.getElementById('actual-signup-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const name = document.getElementById('signup-name').value;
-            const userData = {
-                name: name,
-                isLoggedIn: true
-            };
-            localStorage.setItem('user', JSON.stringify(userData));
-            window.location.href = 'index.html';
-        }
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+            const errorEl = document.getElementById('signup-error');
 
-        function socialLogin(platform) {
-            const userData = {
-                name: platform + ' User',
-                isLoggedIn: true
-            };
-            localStorage.setItem('user', JSON.stringify(userData));
-            window.location.href = 'index.html';
-        }
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                localStorage.setItem('user', JSON.stringify({ name: name, email: email }));
+                window.location.href = 'index.html';
+            } catch (error) {
+                errorEl.innerText = "خطأ في إنشاء الحساب: " + error.message;
+                errorEl.classList.remove('hidden');
+            }
+        });
     </script>
 </body>
 </html>
