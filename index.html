@@ -88,14 +88,14 @@
                 <button onclick="toggleSub('elec', this, 'الإلكترونيات')" class="cat-btn flex flex-col items-center p-2 min-w-[75px] rounded-2xl transition-all"><span class="text-xl">📱</span><span class="text-[10px] font-bold mt-1">إلكترونيات</span></button>
                 <button onclick="toggleSub('elec_appliances', this, 'الكهربائيات')" class="cat-btn flex flex-col items-center p-2 min-w-[75px] rounded-2xl transition-all"><span class="text-xl">⚡</span><span class="text-[10px] font-bold mt-1">كهربائيات</span></button>
                 <button onclick="toggleSub('fashion', this, 'الملابس')" class="cat-btn flex flex-col items-center p-2 min-w-[75px] rounded-2xl transition-all"><span class="text-xl">👕</span><span class="text-[10px] font-bold mt-1">ملابس</span></button>
-                <button onclick="toggleSub('home', this, 'الأثاث')" class="cat-btn flex flex-col items-center p-2 min-w-[75px] rounded-2xl transition-all"><span class="text-xl"> Couch 🛋️</span><span class="text-[10px] font-bold mt-1">أثاث</span></button>
+                <button onclick="toggleSub('home', this, 'الأثاث')" class="cat-btn flex flex-col items-center p-2 min-w-[75px] rounded-2xl transition-all"><span class="text-xl">🛋️</span><span class="text-[10px] font-bold mt-1">أثاث</span></button>
             </div>
         </div>
         <div id="sub-menu-bar" class="bg-blue-50 border-t border-blue-100"><div class="container mx-auto px-4 py-4"><div id="sub-content" class="flex flex-wrap gap-2 justify-center"></div></div></div>
     </nav>
 
     <main class="container mx-auto px-4 py-8">
-        <div id="ads-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-6 text-right text-right">
+        <div id="ads-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-6 text-right">
             <div class="col-span-full py-20 text-center text-gray-400 font-bold italic">جاري تحميل أحدث الإعلانات...</div>
         </div>
     </main>
@@ -129,9 +129,12 @@
             grid.innerHTML = ads.map(ad => {
                 let img = "https://via.placeholder.com/400x300?text=Robabikia";
                 try {
-                    const imgs = JSON.parse(ad.image_url);
-                    if (Array.isArray(imgs) && imgs.length > 0) img = imgs[0];
-                    else if (ad.image_url) img = ad.image_url;
+                    if (ad.image_url) {
+                        if (ad.image_url.startsWith('[')) {
+                            const imgs = JSON.parse(ad.image_url);
+                            if (Array.isArray(imgs) && imgs.length > 0) img = imgs[0];
+                        } else { img = ad.image_url; }
+                    }
                 } catch(e) { if(ad.image_url) img = ad.image_url; }
 
                 return `
@@ -152,15 +155,14 @@
             document.getElementById('modal-price').innerText = ad.price + " ج.م";
             document.getElementById('modal-location').innerText = ad.location;
             document.getElementById('modal-desc').innerText = ad.description;
-
             let img = "https://via.placeholder.com/800x600?text=Robabikia";
             try {
-                const imgs = JSON.parse(ad.image_url);
-                if (Array.isArray(imgs) && imgs.length > 0) img = imgs[0];
-                else if (ad.image_url) img = ad.image_url;
+                if (ad.image_url && ad.image_url.startsWith('[')) {
+                    const imgs = JSON.parse(ad.image_url);
+                    if (Array.isArray(imgs) && imgs.length > 0) img = imgs[0];
+                } else if (ad.image_url) { img = ad.image_url; }
             } catch(e) { if(ad.image_url) img = ad.image_url; }
             document.getElementById('modal-img').src = img;
-
             document.getElementById('product-modal').style.display = 'flex';
             document.body.style.overflow = 'hidden';
         }
@@ -191,24 +193,33 @@
             fetchAds();
             const user = JSON.parse(localStorage.getItem('user'));
             if (user) {
+                const displayName = user.name || user.email || "؟";
                 document.getElementById('auth-section').innerHTML = `
-                    <div class="relative flex items-center gap-3 cursor-pointer group">
-                        <div onclick="document.getElementById('user-menu').classList.toggle('active')" class="w-10 h-10 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center font-black text-lg border-2 border-white shadow-sm">${user.name.charAt(0).toUpperCase()}</div>
-                        <div id="user-menu" class="absolute top-12 left-0 bg-white border border-gray-100 rounded-2xl p-2 min-width-[160px] shadow-xl z-[2000] text-right" style="display:none;">
+                    <div class="user-container relative flex items-center gap-3 cursor-pointer group">
+                        <div onclick="document.getElementById('user-menu').classList.toggle('active')" class="w-10 h-10 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center font-black text-lg border-2 border-white shadow-sm">
+                            ${displayName.charAt(0).toUpperCase()}
+                        </div>
+                        <div id="user-menu" class="absolute top-12 left-0 bg-white border border-gray-100 rounded-2xl p-2 min-w-[160px] shadow-xl z-[2000] text-right" style="display:none;">
                             <a href="messages.html" class="block px-4 py-2 text-xs font-bold text-gray-600 hover:bg-blue-50 rounded-lg">💬 الرسائل</a>
                             <a href="my-ads.html" class="block px-4 py-2 text-xs font-bold text-gray-600 hover:bg-blue-50 rounded-lg">📦 إعلاناتي</a>
                             <hr class="my-1 border-gray-50">
-                            <button onclick="logout()" class="w-full text-right px-4 py-2 text-xs font-bold text-red-500 hover:bg-red-50 rounded-lg font-bold">🚪 خروج</button>
+                            <button onclick="logout()" class="w-full text-right px-4 py-2 text-xs font-bold text-red-500 hover:bg-red-50 rounded-lg">🚪 خروج</button>
                         </div>
                         <a href="add-ad.html" class="bg-blue-600 text-white px-5 py-2.5 rounded-xl font-black text-xs shadow-md active:scale-95 transition-all">+ بيع دلوقتي</a>
                     </div>`;
+
+                const mobileAccountLink = document.getElementById('mobile-account-link');
+                if (mobileAccountLink) mobileAccountLink.href = 'my-ads.html';
             }
         };
 
         window.onclick = (e) => {
             if (e.target.id == 'product-modal') closeProductModal();
             if (e.target.id == 'location-modal') toggleLocationModal();
-            if (document.getElementById('user-menu') && !e.target.closest('.user-container')) document.getElementById('user-menu').classList.remove('active');
+            const userMenu = document.getElementById('user-menu');
+            if (userMenu && !e.target.closest('.user-container')) {
+                userMenu.classList.remove('active');
+            }
         };
     </script>
 </body>
