@@ -74,12 +74,11 @@
                     <h4 class="font-black text-sm mb-2">وصف المنتج:</h4>
                     <p id="modal-desc" class="text-sm text-gray-600 leading-relaxed"></p>
                 </div>
-                <!-- حاوية أزرار التواصل -->
                 <div id="contact-methods-container" class="grid grid-cols-1 gap-3 mt-auto">
                     <button id="call-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl font-black text-sm shadow-lg hidden">📞 اتصـــــال</button>
                     <div id="secondary-btns" class="grid grid-cols-2 gap-3">
                         <button id="whatsapp-btn" class="bg-green-500 hover:bg-green-600 text-white py-4 rounded-2xl font-black text-sm hidden">💬 واتساب</button>
-                        <button id="chat-btn" class="bg-gray-800 hover:bg-black text-white py-4 rounded-2xl font-black text-sm flex items-center justify-center hidden">✉ دردشة</button>
+                        <button id="chat-btn" class="bg-gray-800 hover:bg-black text-white py-4 rounded-2xl font-black text-sm flex items-center justify-center">✉ دردشة</button>
                     </div>
                     <button id="share-whatsapp-btn" class="w-full bg-white border-2 border-green-500 text-green-600 hover:bg-green-50 py-3 rounded-2xl font-black text-sm flex items-center justify-center gap-2 transition-all">
                         <span class="text-lg">📢</span> شارك مع أصحابك على واتساب
@@ -215,7 +214,6 @@
             const chatBtn = document.getElementById('chat-btn');
             const secondaryBtns = document.getElementById('secondary-btns');
 
-            // التحكم في ظهور الأزرار بناءً على البيانات المتوفرة في قاعدة البيانات
             if (ad.phone) {
                 callBtn.classList.remove('hidden');
                 callBtn.onclick = () => window.location.href = `tel:${ad.phone}`;
@@ -226,25 +224,17 @@
                 whatsappBtn.onclick = () => window.open(`https://wa.me/2${ad.whatsapp}`, '_blank');
             } else { whatsappBtn.classList.add('hidden'); }
 
-            if (ad.allow_chat !== false) {
-                chatBtn.classList.remove('hidden');
-                chatBtn.onclick = () => {
-                    if (!user) { window.location.href = 'login.html'; return; }
-                    window.location.href = `messages.html?seller=${ad.seller_email.toLowerCase()}&adId=${ad.id}&ad=${encodeURIComponent(ad.title)}&img=${encodeURIComponent(getSafeImageUrl(ad.image_url))}&price=${ad.price}`;
-                };
-            } else { chatBtn.classList.add('hidden'); }
+            // الدردشة تظهر دائماً طالما لا يوجد عامود في قاعدة البيانات للتحكم بها
+            chatBtn.classList.remove('hidden');
+            chatBtn.onclick = () => {
+                if (!user) { window.location.href = 'login.html'; return; }
+                window.location.href = `messages.html?seller=${ad.seller_email.toLowerCase()}&adId=${ad.id}&ad=${encodeURIComponent(ad.title)}&img=${encodeURIComponent(getSafeImageUrl(ad.image_url))}&price=${ad.price}`;
+            };
 
-            // إخفاء حاوية الأزرار الثانوية إذا كان كلاهما مخفياً
-            if (whatsappBtn.classList.contains('hidden') && chatBtn.classList.contains('hidden')) {
-                secondaryBtns.classList.add('hidden');
+            if (whatsappBtn.classList.contains('hidden')) {
+                secondaryBtns.classList.replace('grid-cols-2', 'grid-cols-1');
             } else {
-                secondaryBtns.classList.remove('hidden');
-                // إذا كان أحد الزرين فقط ظاهراً، اجعله يأخذ المساحة كاملة
-                if (whatsappBtn.classList.contains('hidden') || chatBtn.classList.contains('hidden')) {
-                    secondaryBtns.classList.replace('grid-cols-2', 'grid-cols-1');
-                } else {
-                    secondaryBtns.classList.replace('grid-cols-1', 'grid-cols-2');
-                }
+                secondaryBtns.classList.replace('grid-cols-1', 'grid-cols-2');
             }
 
             document.getElementById('share-whatsapp-btn').onclick = () => {
