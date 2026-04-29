@@ -13,6 +13,10 @@
         #location-modal { display: none; backdrop-filter: blur(8px); }
         .fade-in-down { animation: fadeInDown 0.3s ease-out; }
         @keyframes fadeInDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        /* Toggle Switch Style */
+        .dot { transition: all 0.3s ease-in-out; }
+        input:checked ~ .dot { transform: translateX(-100%); background-color: #fff; }
+        input:checked ~ .block { background-color: #2563eb; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col text-right">
@@ -97,15 +101,39 @@
                 </section>
 
                 <section class="space-y-5">
-                    <h3 class="text-lg font-black text-gray-800 mb-2">📞 معلومات التواصل</h3>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                        <div>
-                            <label class="text-xs font-black text-gray-600 block mb-2 mr-1">رقم الهاتف</label>
-                            <input type="tel" id="phone" required placeholder="01xxxxxxxxx" class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 text-sm text-right">
+                    <h3 class="text-lg font-black text-gray-800 mb-2">📞 خيارات التواصل</h3>
+                    <p class="text-[10px] text-gray-400 -mt-3 mb-4">اختر وسيلة واحدة على الأقل ليتواصل معك المشترون</p>
+
+                    <div class="space-y-4">
+                        <!-- خيار الدردشة الداخلية -->
+                        <div class="flex items-center justify-between bg-gray-50 p-4 rounded-2xl border border-gray-100">
+                            <div class="flex items-center gap-3 text-right">
+                                <span class="text-xl">💬</span>
+                                <div>
+                                    <h4 class="text-sm font-black text-gray-800">دردشة روبابيكيا</h4>
+                                    <p class="text-[10px] text-gray-500">استقبال الرسائل داخل الموقع فقط</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-center">
+                                <label for="allow-chat" class="flex items-center cursor-pointer">
+                                    <div class="relative">
+                                        <input type="checkbox" id="allow-chat" class="sr-only" checked>
+                                        <div class="block bg-gray-200 w-12 h-7 rounded-full transition"></div>
+                                        <div class="dot absolute left-1 top-1 bg-white w-5 h-5 rounded-full transition"></div>
+                                    </div>
+                                </label>
+                            </div>
                         </div>
-                        <div>
-                            <label class="text-xs font-black text-gray-600 block mb-2 mr-1">رقم الواتساب</label>
-                            <input type="tel" id="whatsapp" placeholder="01xxxxxxxxx" class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 text-sm text-right">
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                            <div>
+                                <label class="text-xs font-black text-gray-600 block mb-2 mr-1">رقم الهاتف (اختياري)</label>
+                                <input type="tel" id="phone" placeholder="01xxxxxxxxx" class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 text-sm text-right">
+                            </div>
+                            <div>
+                                <label class="text-xs font-black text-gray-600 block mb-2 mr-1">رقم الواتساب (اختياري)</label>
+                                <input type="tel" id="whatsapp" placeholder="01xxxxxxxxx" class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 text-sm text-right">
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -174,6 +202,7 @@
             document.getElementById('main-category').value = data.main_category;
             document.getElementById('phone').value = data.phone || '';
             document.getElementById('whatsapp').value = data.whatsapp || '';
+            document.getElementById('allow-chat').checked = data.allow_chat !== false;
 
             updateSubCategories(data.main_category);
             document.getElementById('sub-category').value = data.sub_category;
@@ -226,7 +255,7 @@
             if (existingImages.length + newFiles.length + files.length > 17) return alert("أقصى حد 17 صورة");
             newFiles = [...newFiles, ...files];
             renderPreviews();
-            e.target.value = ''; // Reset input
+            e.target.value = '';
         };
 
         function renderPreviews() {
@@ -266,18 +295,15 @@
                         const canvas = document.createElement('canvas');
                         let width = img.width;
                         let height = img.height;
-
                         if (width > height) {
                             if (width > maxWidth) { height *= maxWidth / width; width = maxWidth; }
                         } else {
                             if (height > maxWidth) { width *= maxWidth / height; height = maxWidth; }
                         }
-
                         canvas.width = width;
                         canvas.height = height;
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
-
                         canvas.toBlob((blob) => {
                             resolve(new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", { type: 'image/jpeg' }));
                         }, 'image/jpeg', quality);
@@ -288,6 +314,16 @@
 
         document.getElementById('ad-form').addEventListener('submit', async (e) => {
             e.preventDefault();
+
+            const phone = document.getElementById('phone').value;
+            const whatsapp = document.getElementById('whatsapp').value;
+            const allowChat = document.getElementById('allow-chat').checked;
+
+            if (!phone && !whatsapp && !allowChat) {
+                alert("يرجى اختيار وسيلة تواصل واحدة على الأقل (هاتف، واتساب، أو تفعيل الدردشة)");
+                return;
+            }
+
             const btn = document.getElementById('submit-btn');
             btn.disabled = true; btn.innerText = "جاري الحفظ وضغط الصور...";
 
@@ -297,10 +333,8 @@
                 for (let file of newFiles) {
                     const compressed = await compressImage(file);
                     const name = `ad-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.jpg`;
-
                     const { error: uploadError } = await supabase.storage.from('ad-images').upload(name, compressed);
                     if (uploadError) throw uploadError;
-
                     const { data } = supabase.storage.from('ad-images').getPublicUrl(name);
                     finalImages.push(data.publicUrl);
                 }
@@ -311,8 +345,9 @@
                     sub_category: document.getElementById('sub-category').value,
                     price: parseFloat(document.getElementById('price').value),
                     description: document.getElementById('description').value,
-                    phone: document.getElementById('phone').value,
-                    whatsapp: document.getElementById('whatsapp').value,
+                    phone: phone,
+                    whatsapp: whatsapp,
+                    allow_chat: allowChat,
                     location: document.getElementById('location').value,
                     image_url: JSON.stringify(finalImages)
                 };

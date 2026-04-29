@@ -3,52 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <!-- الرابط الأساسي (Canonical) -->
     <link rel="canonical" href="https://robabikia.vercel.app/" />
-
-    <!-- كود التحقق من جوجل -->
     <meta name="google-site-verification" content="jMu4iVifbTLLsfA8qMWznF-tMASr0H2gMzTnUOtX748" />
-
-    <!-- تحسينات محركات البحث (SEO) -->
     <title>روبابيكيا - سوق بيع وشراء المنتجات في مصر | سيارات، عقارات، إلكترونيات</title>
     <meta name="description" content="روبابيكيا هو سوقك الموثوق لبيع وشراء كل شيء في مصر. تصفح آلاف الإعلانات للسيارات، العقارات، الإلكترونيات، الأثاث، والخدمات. انشر إعلانك مجاناً الآن!">
-    <meta name="keywords" content="روبابيكيا, بيع مستعمل, شراء مستعمل, سوق مصر, إعلانات مبوبة, سيارات للبيع, شقق للايجار, وظائف مصر, خدمات صيانة">
-
-    <!-- وسم Open Graph للفيس بوك وواتساب -->
     <meta property="og:title" content="روبابيكيا - بيع واشتري أي حاجة">
-    <meta property="og:description" content="أفضل سوق لبيع وشراء المنتجات في مصر. سهل، سريع، ومجاني.">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://robabikia.vercel.app/">
     <meta property="og:image" content="https://robabikia.vercel.app/logo.png">
-
-    <!-- البيانات المنظمة (JSON-LD) لجوجل -->
-    <script type="application/ld+json">
-    [
-      {
-        "@context": "https://schema.org",
-        "@type": "WebSite",
-        "name": "روبابيكيا",
-        "url": "https://robabikia.vercel.app/",
-        "potentialAction": {
-          "@type": "SearchAction",
-          "target": "https://robabikia.vercel.app/?search={search_term_string}",
-          "query-input": "required name=search_term_string"
-        }
-      },
-      {
-        "@context": "https://schema.org",
-        "@type": "Organization",
-        "name": "روبابيكيا",
-        "url": "https://robabikia.vercel.app/",
-        "logo": "https://robabikia.vercel.app/logo.png",
-        "sameAs": [
-          "https://www.facebook.com/robabikia",
-          "https://www.instagram.com/robabikia"
-        ]
-      }
-    ]
-    </script>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
@@ -60,7 +20,6 @@
         .ad-card:hover { transform: translateY(-5px); box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1); }
         .cat-btn { transition: all 0.2s; border: 2px solid transparent; }
         .cat-btn.active { border-color: #2563eb; background-color: #eff6ff; }
-        .bottom-nav-item.active { color: #2563eb; }
         #sub-menu-bar { display: none; }
         #sub-menu-bar.active { display: block; animation: slideDown 0.3s ease-out; }
         @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
@@ -73,16 +32,14 @@
 
     <!-- Location Modal -->
     <div id="location-modal" class="fixed inset-0 z-[4000] bg-black/40 hidden items-center justify-center p-4">
-        <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden">
-            <div class="p-5 border-b flex justify-between items-center bg-gray-50 text-right">
+        <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden text-right">
+            <div class="p-5 border-b flex justify-between items-center bg-gray-50">
                 <h3 class="font-black text-lg text-gray-800">تحديد الموقع</h3>
                 <button onclick="toggleLocationModal()" class="text-gray-400 text-xl font-bold">✕</button>
             </div>
-            <div class="p-4 text-right">
+            <div class="p-4">
                 <input type="text" id="location-search-input" placeholder="ابحث عن مدينة..." class="w-full p-3 mb-4 rounded-xl border border-gray-100 outline-none focus:ring-2 focus:ring-blue-500 text-sm text-right bg-gray-50" oninput="filterLocationsUI()">
-                <div id="location-list" class="max-h-[350px] overflow-y-auto space-y-1 no-scrollbar text-right">
-                    <div onclick="selectLocation('كل مصر')" class="p-3 hover:bg-blue-50 rounded-xl cursor-pointer font-black text-sm text-right border-b border-gray-50 transition-all text-blue-600">📍 كل مصر</div>
-                </div>
+                <div id="location-list" class="max-h-[350px] overflow-y-auto space-y-1 no-scrollbar"></div>
             </div>
         </div>
     </div>
@@ -91,7 +48,7 @@
     <div id="product-modal" class="fixed inset-0 z-[3000] bg-black/60 hidden items-center justify-center p-0 md:p-4 backdrop-blur-sm">
         <div class="bg-white w-full max-w-4xl h-full md:h-auto md:max-h-[90vh] md:rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row relative text-right">
             <button onclick="closeProductModal()" class="absolute top-4 right-4 z-50 bg-white/80 w-10 h-10 rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-all text-xl font-bold">✕</button>
-            <div class="w-full md:w-1/2 h-80 md:h-auto bg-gray-100 relative group text-right">
+            <div class="w-full md:w-1/2 h-80 md:h-auto bg-gray-100 relative group">
                 <div id="modal-images" class="w-full h-full flex transition-transform duration-500">
                     <img id="modal-main-img" src="" class="w-full h-full object-contain" loading="lazy">
                 </div>
@@ -113,17 +70,17 @@
                 <div class="flex items-center gap-2 text-gray-500 text-sm mb-6 pb-6 border-b">
                     <span>📍</span><span id="modal-location"></span>
                 </div>
-                <div class="mb-6 text-right">
+                <div class="mb-6">
                     <h4 class="font-black text-sm mb-2">وصف المنتج:</h4>
                     <p id="modal-desc" class="text-sm text-gray-600 leading-relaxed"></p>
                 </div>
-                <div class="grid grid-cols-1 gap-3 mt-auto">
-                    <button id="call-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl font-black text-sm shadow-lg">📞 اتصـــــال</button>
-                    <div class="grid grid-cols-2 gap-3">
-                        <button id="whatsapp-btn" class="bg-green-500 hover:bg-green-600 text-white py-4 rounded-2xl font-black text-sm">💬 واتساب</button>
-                        <button id="chat-btn" class="bg-gray-800 hover:bg-black text-white py-4 rounded-2xl font-black text-sm flex items-center justify-center">✉ دردشة</button>
+                <!-- حاوية أزرار التواصل -->
+                <div id="contact-methods-container" class="grid grid-cols-1 gap-3 mt-auto">
+                    <button id="call-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl font-black text-sm shadow-lg hidden">📞 اتصـــــال</button>
+                    <div id="secondary-btns" class="grid grid-cols-2 gap-3">
+                        <button id="whatsapp-btn" class="bg-green-500 hover:bg-green-600 text-white py-4 rounded-2xl font-black text-sm hidden">💬 واتساب</button>
+                        <button id="chat-btn" class="bg-gray-800 hover:bg-black text-white py-4 rounded-2xl font-black text-sm flex items-center justify-center hidden">✉ دردشة</button>
                     </div>
-                    <!-- زر المشاركة الجديد -->
                     <button id="share-whatsapp-btn" class="w-full bg-white border-2 border-green-500 text-green-600 hover:bg-green-50 py-3 rounded-2xl font-black text-sm flex items-center justify-center gap-2 transition-all">
                         <span class="text-lg">📢</span> شارك مع أصحابك على واتساب
                     </button>
@@ -132,28 +89,22 @@
         </div>
     </div>
 
-    <!-- Header -->
     <header class="bg-white shadow-sm sticky top-0 z-[1000] border-b">
-        <div class="container mx-auto px-4 py-3 flex items-center justify-between gap-2 md:gap-3 text-right">
+        <div class="container mx-auto px-4 py-3 flex items-center justify-between gap-2 md:gap-3">
             <div class="flex items-center gap-2 md:gap-3 shrink-0">
                 <div onclick="window.location.reload()" class="flex items-center gap-2 cursor-pointer">
                     <div class="logo-gradient text-white w-9 h-9 md:w-10 md:h-10 flex items-center justify-center rounded-xl font-black text-lg md:text-xl shadow-lg">ر</div>
                     <span class="text-lg md:text-xl font-black hidden lg:block">روبا<span class="text-blue-600">بيكيا</span></span>
                 </div>
-                <!-- Location Toggle -->
                 <div onclick="toggleLocationModal()" class="flex items-center gap-1 cursor-pointer bg-gray-50 hover:bg-gray-100 px-2 md:px-3 py-1.5 md:py-2 rounded-xl border border-gray-100 transition-all shrink-0">
                     <span class="text-blue-600 text-xs md:text-sm">📍</span>
                     <span id="current-city-name" class="text-[9px] md:text-[10px] font-black text-gray-700 max-w-[60px] md:max-w-none truncate">كل مصر</span>
                 </div>
             </div>
-
-            <!-- Search Bar -->
-            <div class="flex flex-1 relative text-right">
+            <div class="flex flex-1 relative">
                 <input type="text" id="search-input" placeholder="بتدور على إيه؟" class="w-full bg-gray-100 rounded-xl py-2 md:py-2.5 px-8 md:px-10 outline-none focus:ring-2 focus:ring-blue-500 text-[11px] md:text-sm border-none text-right">
                 <div class="absolute right-2 md:right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs md:text-sm">🔍</div>
             </div>
-
-            <!-- Desktop Auth Section -->
             <div id="auth-section" class="hidden md:flex items-center gap-3 shrink-0">
                 <a href="login.html" class="text-xs font-black text-gray-500 hover:text-blue-600 px-3 transition-colors">دخول</a>
                 <a href="login.html" class="bg-blue-600 text-white px-5 py-2.5 rounded-xl font-black text-xs shadow-md">+ بيع دلوقتي</a>
@@ -161,10 +112,9 @@
         </div>
     </header>
 
-    <!-- Navigation -->
     <nav class="bg-white border-b sticky top-[61px] md:top-[65px] z-[900]">
         <div class="container mx-auto px-4 overflow-hidden">
-            <div class="no-scrollbar flex items-center justify-start md:justify-center gap-4 py-3 overflow-x-auto whitespace-nowrap text-right">
+            <div class="no-scrollbar flex items-center justify-start md:justify-center gap-4 py-3 overflow-x-auto whitespace-nowrap">
                 <button onclick="toggleSub('cars', this, 'السيارات')" class="cat-btn flex flex-col items-center p-2 min-w-[75px] rounded-2xl transition-all"><span class="text-xl">🚗</span><span class="text-[10px] font-bold mt-1">سيارات</span></button>
                 <button onclick="toggleSub('real', this, 'العقارات')" class="cat-btn flex flex-col items-center p-2 min-w-[75px] rounded-2xl transition-all"><span class="text-xl">🏠</span><span class="text-[10px] font-bold mt-1">عقارات</span></button>
                 <button onclick="toggleSub('elec', this, 'الإلكترونيات')" class="cat-btn flex flex-col items-center p-2 min-w-[75px] rounded-2xl transition-all"><span class="text-xl">📱</span><span class="text-[10px] font-bold mt-1">إلكترونيات</span></button>
@@ -180,9 +130,7 @@
     </nav>
 
     <main class="container mx-auto px-4 py-8">
-        <div id="ads-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-6 text-right">
-            <div class="col-span-full py-20 text-center text-gray-400 font-bold italic">جاري تحميل أحدث الإعلانات...</div>
-        </div>
+        <div id="ads-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-6"></div>
     </main>
 
     <!-- Mobile Nav -->
@@ -191,10 +139,7 @@
         <a href="favorites.html" class="bottom-nav-item flex flex-col items-center gap-1 text-gray-400"><span>❤</span><span class="text-[9px] font-black">المفضلة</span></a>
         <a href="add-ad.html" class="flex flex-col items-center -mt-8 bg-blue-600 text-white w-14 h-14 rounded-full border-4 border-gray-50 flex items-center justify-center shadow-lg active:scale-90 transition-all"><span class="text-2xl font-bold">+</span></a>
         <a href="messages.html" class="bottom-nav-item flex flex-col items-center gap-1 text-gray-400 relative">
-            <span class="relative">
-                💬
-                <div id="msg-badge" class="hidden absolute -top-1.5 -right-2 bg-red-600 text-white text-[8px] font-bold px-1 py-0.5 rounded-full border border-white msg-badge">0</div>
-            </span>
+            <span>💬<div id="msg-badge" class="hidden absolute -top-1.5 -right-2 bg-red-600 text-white text-[8px] font-bold px-1 py-0.5 rounded-full border border-white msg-badge">0</div></span>
             <span class="text-[9px] font-black">الرسائل</span>
         </a>
         <a href="my-ads.html" id="mobile-account-link" class="bottom-nav-item flex flex-col items-center gap-1 text-gray-400"><span>👤</span><span class="text-[9px] font-black">حسابي</span></a>
@@ -213,112 +158,32 @@
         let searchTerm = '';
 
         const user = JSON.parse(localStorage.getItem('user'));
-
         document.getElementById('current-city-name').innerText = selectedLocation;
 
         async function fetchAds() {
-            let queryBuilder = supabase.from('ads').select('*');
-            if (selectedLocation !== 'كل مصر') queryBuilder = queryBuilder.eq('location', selectedLocation);
-            if (activeCategory !== 'all') queryBuilder = queryBuilder.eq('main_category', activeCategory);
-            if (activeSubCategory !== 'الكل') queryBuilder = queryBuilder.eq('sub_category', activeSubCategory);
-            if (searchTerm) queryBuilder = queryBuilder.ilike('title', `%${searchTerm}%`);
+            let qB = supabase.from('ads').select('*');
+            if (selectedLocation !== 'كل مصر') qB = qB.eq('location', selectedLocation);
+            if (activeCategory !== 'all') qB = qB.eq('main_category', activeCategory);
+            if (activeSubCategory !== 'الكل') qB = qB.eq('sub_category', activeSubCategory);
+            if (searchTerm) qB = qB.ilike('title', `%${searchTerm}%`);
 
-            try {
-                const { data, error } = await queryBuilder.order('created_at', { ascending: false });
-                if (error) throw error;
-                adsCache = data;
-                renderAds(data);
-                checkDirectLink();
-            } catch (err) { console.error(err); }
+            const { data, error } = await qB.order('created_at', { ascending: false });
+            if (!error) { adsCache = data; renderAds(data); checkDirectLink(); }
         }
 
-        // وظيفة لفتح إعلان مباشر من الرابط
         function checkDirectLink() {
             const urlParams = new URLSearchParams(window.location.search);
             const adId = urlParams.get('ad');
             if (adId && adsCache.length > 0) {
-                const id = parseInt(adId);
-                if (!isNaN(id)) openProductModal(id);
-                // إزالة البارامتر من الرابط لتجنب فتحه مرة أخرى عند التحديث
-                window.history.replaceState({}, document.title, window.location.pathname);
+                const ad = adsCache.find(a => a.id == adId);
+                if (ad) openProductModal(ad.id);
+                window.history.replaceState({}, '', window.location.pathname);
             }
-        }
-
-        // Listen to Unread Messages for Badge
-        function listenToUnreadMessages() {
-            if (!user || !user.email) return;
-            const q = query(collection(db, "chats"), where("participants", "array-contains", user.email.toLowerCase()));
-            onSnapshot(q, (snapshot) => {
-                let totalUnread = 0;
-                const userKey = user.email.toLowerCase().replace(/\./g, '_');
-                snapshot.forEach(doc => {
-                    const chat = doc.data();
-                    if (chat.hiddenFor && chat.hiddenFor.includes(user.email.toLowerCase())) return;
-                    totalUnread += (chat.unreadCount?.[userKey] || 0);
-                });
-
-                const badge = document.getElementById('msg-badge');
-                if (totalUnread > 0) {
-                    badge.innerText = totalUnread > 9 ? '+9' : totalUnread;
-                    badge.classList.remove('hidden');
-                } else {
-                    badge.classList.add('hidden');
-                }
-            });
-        }
-
-        document.getElementById('search-input').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                searchTerm = e.target.value.trim();
-                fetchAds();
-            }
-        });
-
-        window.toggleLocationModal = () => {
-            const m = document.getElementById('location-modal');
-            m.classList.toggle('hidden');
-            m.classList.toggle('flex');
-            if (!m.classList.contains('hidden')) renderLocationsUI(egyptLocations);
-        };
-
-        const egyptLocations = ["القاهرة - مدينة نصر", "القاهرة - التجمع الخامس", "القاهرة - مصر الجديدة", "القاهرة - المعادي", "القاهرة - الرحاب", "القاهرة - مدينتي", "الجيزة - 6 أكتوبر", "الجيزة - الشيخ زايد", "الجيزة - الهرم", "الجيزة - فيصل", "الجيزة - المهندسين", "الإسكندرية - سموحة", "الإسكندرية - ميامي", "الدقهلية - المنصورة", "الشرقية - الزقازيق", "الغربية - طنطا", "المنوفية - شبين الكوم", "البحيرة - دمنهور", "كفر الشيخ", "دمياط", "بور سعيد", "السويس", "الإسماعيلية", "الفيوم", "بني سويف", "المنيا", "أسيوط", "سوهاج", "قنا", "الأقصر", "أسوان", "الغردقة", "مرسى مطروح"];
-
-        function renderLocationsUI(list) {
-            const container = document.getElementById('location-list');
-            container.innerHTML = `<div onclick="selectLocation('كل مصر')" class="p-3 hover:bg-blue-50 rounded-xl cursor-pointer font-black text-sm text-right border-b border-gray-50 transition-all text-blue-600">📍 كل مصر</div>`;
-            container.innerHTML += list.map(loc => `<div onclick="selectLocation('${loc}')" class="p-3 hover:bg-blue-50 rounded-xl cursor-pointer font-bold text-sm text-right border-b border-gray-50 last:border-0 transition-all">📍 ${loc}</div>`).join('');
-        }
-
-        window.filterLocationsUI = () => {
-            const val = document.getElementById('location-search-input').value.toLowerCase();
-            const filtered = egyptLocations.filter(l => l.toLowerCase().includes(val));
-            renderLocationsUI(filtered);
-        };
-
-        window.selectLocation = (loc) => {
-            selectedLocation = loc;
-            localStorage.setItem('userLocation', loc);
-            document.getElementById('current-city-name').innerText = loc;
-            toggleLocationModal();
-            fetchAds();
-        };
-
-        function getSafeImageUrl(url) {
-            let defaultImg = "https://via.placeholder.com/400x300?text=Robabikia";
-            if (!url) return defaultImg;
-            try {
-                if (url.startsWith('[') || url.startsWith('{')) {
-                    const parsed = JSON.parse(url);
-                    if (Array.isArray(parsed) && parsed.length > 0) return parsed[0];
-                    if (typeof parsed === 'string') return parsed;
-                }
-                return url;
-            } catch (e) { return url; }
         }
 
         function renderAds(ads) {
             const grid = document.getElementById('ads-grid');
-            if (!ads || ads.length === 0) { grid.innerHTML = '<p class="col-span-full text-center py-20 text-gray-400 font-bold">لا توجد نتائج مطابقة لبحثك في هذا الموقع</p>'; return; }
+            if (!ads || ads.length === 0) { grid.innerHTML = '<p class="col-span-full text-center py-20 text-gray-400 font-bold">لا توجد نتائج</p>'; return; }
             grid.innerHTML = ads.map(ad => {
                 const img = getSafeImageUrl(ad.image_url);
                 return `
@@ -335,120 +200,108 @@
         window.openProductModal = function(id) {
             const ad = adsCache.find(a => a.id === id);
             if (!ad) return;
+
             currentAdImages = [];
-            try {
-                if (ad.image_url && ad.image_url.startsWith('[')) {
-                    currentAdImages = JSON.parse(ad.image_url);
-                } else { currentAdImages = [ad.image_url]; }
-            } catch(e) { currentAdImages = [ad.image_url]; }
-            if (currentAdImages.length === 0) currentAdImages = ["https://via.placeholder.com/800x600?text=No+Images"];
-            currentImgIndex = 0;
+            try { currentAdImages = JSON.parse(ad.image_url); } catch(e) { currentAdImages = [ad.image_url]; }
             showImage(0);
+
             document.getElementById('modal-title').innerText = ad.title;
             document.getElementById('modal-price').innerText = ad.price + " ج.م";
             document.getElementById('modal-location').innerText = ad.location;
             document.getElementById('modal-desc').innerText = ad.description;
 
-            // Setup Contact Buttons
             const callBtn = document.getElementById('call-btn');
             const whatsappBtn = document.getElementById('whatsapp-btn');
             const chatBtn = document.getElementById('chat-btn');
-            const shareBtn = document.getElementById('share-whatsapp-btn');
+            const secondaryBtns = document.getElementById('secondary-btns');
 
+            // التحكم في ظهور الأزرار بناءً على البيانات المتوفرة في قاعدة البيانات
             if (ad.phone) {
+                callBtn.classList.remove('hidden');
                 callBtn.onclick = () => window.location.href = `tel:${ad.phone}`;
-                callBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-            } else {
-                callBtn.onclick = () => alert('رقم الهاتف غير متوفر لهذا الإعلان');
-                callBtn.classList.add('opacity-50', 'cursor-not-allowed');
-            }
+            } else { callBtn.classList.add('hidden'); }
 
             if (ad.whatsapp) {
+                whatsappBtn.classList.remove('hidden');
                 whatsappBtn.onclick = () => window.open(`https://wa.me/2${ad.whatsapp}`, '_blank');
-                whatsappBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            } else { whatsappBtn.classList.add('hidden'); }
+
+            if (ad.allow_chat !== false) {
+                chatBtn.classList.remove('hidden');
+                chatBtn.onclick = () => {
+                    if (!user) { window.location.href = 'login.html'; return; }
+                    window.location.href = `messages.html?seller=${ad.seller_email.toLowerCase()}&adId=${ad.id}&ad=${encodeURIComponent(ad.title)}&img=${encodeURIComponent(getSafeImageUrl(ad.image_url))}&price=${ad.price}`;
+                };
+            } else { chatBtn.classList.add('hidden'); }
+
+            // إخفاء حاوية الأزرار الثانوية إذا كان كلاهما مخفياً
+            if (whatsappBtn.classList.contains('hidden') && chatBtn.classList.contains('hidden')) {
+                secondaryBtns.classList.add('hidden');
             } else {
-                whatsappBtn.onclick = () => alert('رقم الواتساب غير متوفر لهذا الإعلان');
-                whatsappBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                secondaryBtns.classList.remove('hidden');
+                // إذا كان أحد الزرين فقط ظاهراً، اجعله يأخذ المساحة كاملة
+                if (whatsappBtn.classList.contains('hidden') || chatBtn.classList.contains('hidden')) {
+                    secondaryBtns.classList.replace('grid-cols-2', 'grid-cols-1');
+                } else {
+                    secondaryBtns.classList.replace('grid-cols-1', 'grid-cols-2');
+                }
             }
 
-            chatBtn.onclick = () => {
-                if (!user) { window.location.href = 'login.html'; return; }
-                const adImage = getSafeImageUrl(ad.image_url);
-                window.location.href = `messages.html?seller=${ad.seller_email.toLowerCase()}&adId=${ad.id}&ad=${encodeURIComponent(ad.title)}&img=${encodeURIComponent(adImage)}&price=${ad.price}`;
-            };
-
-            // منطق زر المشاركة
-            shareBtn.onclick = () => {
-                const shareUrl = `${window.location.origin}${window.location.pathname}?ad=${ad.id}`;
-                const shareText = `شوف الإعلان ده على روبابيكيا:
-*${ad.title}*
-السعر: ${ad.price} ج.م
-📍 ${ad.location}
-
-تقدر تشوف الصور وتتواصل مع صاحب الإعلان من هنا:
-${shareUrl}`;
-                window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, '_blank');
+            document.getElementById('share-whatsapp-btn').onclick = () => {
+                const url = `${window.location.origin}${window.location.pathname}?ad=${ad.id}`;
+                const txt = `شوف الإعلان ده على روبابيكيا:\n*${ad.title}*\nالسعر: ${ad.price} ج.م\n📍 ${ad.location}\n\nالرابط:\n${url}`;
+                window.open(`https://wa.me/?text=${encodeURIComponent(txt)}`, '_blank');
             };
 
             document.getElementById('product-modal').style.display = 'flex';
             document.body.style.overflow = 'hidden';
-        }
-
-        window.closeProductModal = function() {
-            document.getElementById('product-modal').style.display = 'none';
-            document.body.style.overflow = 'auto';
-        }
-
-        window.showImage = function(index) {
-            document.getElementById('modal-main-img').src = currentAdImages[index];
-            document.getElementById('photo-index').innerText = index + 1;
-            document.getElementById('photo-total').innerText = currentAdImages.length;
-        }
-
-        window.nextImg = function() { currentImgIndex = (currentImgIndex + 1) % currentAdImages.length; showImage(currentImgIndex); }
-        window.prevImg = function() { currentImgIndex = (currentImgIndex - 1 + currentAdImages.length) % currentAdImages.length; showImage(currentImgIndex); }
-
-        const cats = {
-            cars: ['سيارات مستعملة', 'سيارات جديدة', 'موتوسيكلات', 'قطع غيار'],
-            real: ['شراء', 'استئجار', 'أرض', 'شاليهات', 'فيلة'],
-            elec: ['موبايلات وهواتف', 'حواسيب', 'لابتوب', 'اجهزة اخرى'],
-            elec_appliances: ['ثلاجات', 'غسالات', 'بوتاجازات', 'مكيفات'],
-            fashion: ['رجالي', 'نسائي', 'أطفال', 'أحذية'],
-            home: ['غرف نوم', 'ركنة', 'سجاد', 'مطابخ'],
-            services: ['صيانة', 'تنظيف', 'نقل عفش', 'توصيل', 'فنيين'],
-            jobs: ['بحث عن عمل', 'توظيف', 'عمل حر'],
-            animals: ['كلاب', 'قطط', 'عصافير', 'أسماك']
         };
 
-        window.toggleSub = function(cat, btn, label) {
-            const bar = document.getElementById('sub-menu-bar');
-            const content = document.getElementById('sub-content');
+        window.closeProductModal = () => { document.getElementById('product-modal').style.display = 'none'; document.body.style.overflow = 'auto'; };
+        window.showImage = (idx) => {
+            currentImgIndex = idx;
+            document.getElementById('modal-main-img').src = currentAdImages[idx];
+            document.getElementById('photo-index').innerText = idx + 1;
+            document.getElementById('photo-total').innerText = currentAdImages.length;
+        };
+        window.nextImg = () => showImage((currentImgIndex + 1) % currentAdImages.length);
+        window.prevImg = () => showImage((currentImgIndex - 1 + currentAdImages.length) % currentAdImages.length);
+
+        function getSafeImageUrl(url) {
+            if (!url) return "https://via.placeholder.com/400";
+            try { const p = JSON.parse(url); return Array.isArray(p) ? p[0] : url; } catch(e) { return url; }
+        }
+
+        const egyptLocations = ["القاهرة - مدينة نصر", "القاهرة - التجمع الخامس", "القاهرة - مصر الجديدة", "القاهرة - المعادي", "القاهرة - الرحاب", "القاهرة - مدينتي", "الجيزة - 6 أكتوبر", "الجيزة - الشيخ زايد", "الجيزة - الهرم", "الجيزة - فيصل", "الجيزة - المهندسين", "الإسكندرية - سموحة", "الإسكندرية - ميامي", "الدقهلية - المنصورة", "الشرقية - الزقازيق", "الغربية - طنطا", "المنوفية - شبين الكوم", "البحيرة - دمنهور", "كفر الشيخ", "دمياط", "بور سعيد", "السويس", "الإسماعيلية", "الفيوم", "بني سويف", "المنيا", "أسيوط", "سوهاج", "قنا", "الأقصر", "أسوان", "الغردقة", "مرسى مطروح"];
+        window.toggleLocationModal = () => {
+            const m = document.getElementById('location-modal');
+            m.classList.toggle('hidden'); m.classList.toggle('flex');
+            if (!m.classList.contains('hidden')) renderLocationsUI(egyptLocations);
+        };
+        function renderLocationsUI(list) {
+            document.getElementById('location-list').innerHTML = `<div onclick="selectLocation('كل مصر')" class="p-3 hover:bg-blue-50 rounded-xl cursor-pointer font-black text-sm text-blue-600 border-b border-gray-50">📍 كل مصر</div>` +
+                list.map(l => `<div onclick="selectLocation('${l}')" class="p-3 hover:bg-blue-50 rounded-xl cursor-pointer font-bold text-sm border-b border-gray-50 last:border-0">📍 ${l}</div>`).join('');
+        }
+        window.filterLocationsUI = () => renderLocationsUI(egyptLocations.filter(l => l.toLowerCase().includes(document.getElementById('location-search-input').value.toLowerCase())));
+        window.selectLocation = (l) => { selectedLocation = l; localStorage.setItem('userLocation', l); document.getElementById('current-city-name').innerText = l; toggleLocationModal(); fetchAds(); };
+
+        document.getElementById('search-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') { searchTerm = e.target.value; fetchAds(); } });
+
+        const cats = { cars: ['سيارات مستعملة', 'سيارات جديدة', 'موتوسيكلات'], real: ['شراء', 'استئجار', 'أرض'], elec: ['موبايلات', 'حواسيب', 'لابتوب'], elec_appliances: ['ثلاجات', 'غسالات'], fashion: ['رجالي', 'نسائي'], home: ['غرف نوم', 'مطبخ'], services: ['صيانة', 'تنظيف'], jobs: ['توظيف', 'عمل حر'], animals: ['كلاب', 'قطط'] };
+        window.toggleSub = (cat, btn, label) => {
+            const bar = document.getElementById('sub-menu-bar'), content = document.getElementById('sub-content');
             document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-            if (activeCategory === cat) {
-                activeCategory = 'all'; activeSubCategory = 'الكل';
-                bar.classList.remove('active'); fetchAds(); return;
-            }
-            activeCategory = cat; activeSubCategory = 'الكل';
-            btn.classList.add('active'); bar.classList.add('active');
-            content.innerHTML = `
-                <button onclick="filterBySub('${cat}', 'الكل')" class="bg-white border border-blue-200 text-blue-600 px-4 py-2 rounded-full text-xs font-bold hover:bg-blue-600 hover:text-white transition-all shadow-sm">كل ${label}</button>
-                ${cats[cat].map(s => `<button onclick="filterBySub('${cat}', '${s}')" class="bg-white border border-gray-100 text-gray-600 px-4 py-2 rounded-full text-xs font-bold hover:bg-blue-600 hover:text-white transition-all shadow-sm">${s}</button>`).join('')}
-            `;
+            if (activeCategory === cat) { activeCategory = 'all'; bar.classList.remove('active'); fetchAds(); return; }
+            activeCategory = cat; btn.classList.add('active'); bar.classList.add('active');
+            content.innerHTML = `<button onclick="filterBySub('${cat}', 'الكل')" class="bg-white border border-blue-200 text-blue-600 px-4 py-2 rounded-full text-xs font-bold shadow-sm">كل ${label}</button>` +
+                cats[cat].map(s => `<button onclick="filterBySub('${cat}', '${s}')" class="bg-white border border-gray-100 text-gray-600 px-4 py-2 rounded-full text-xs font-bold shadow-sm">${s}</button>`).join('');
             fetchAds();
         };
-
-        window.filterBySub = async function(cat, sub) {
-            activeSubCategory = sub; fetchAds();
-            window.scrollTo({ top: 400, behavior: 'smooth' });
-        };
+        window.filterBySub = (cat, sub) => { activeSubCategory = sub; fetchAds(); };
 
         if (user) {
-            document.getElementById('auth-section').innerHTML = `
-                <a href="my-ads.html" class="text-xs font-black text-gray-500 hover:text-blue-600 transition-colors">إعلاناتي</a>
-                <a href="add-ad.html" class="bg-blue-600 text-white px-5 py-2.5 rounded-xl font-black text-xs shadow-md">+ بيع دلوقتي</a>
-            `;
+            document.getElementById('auth-section').innerHTML = `<a href="my-ads.html" class="text-xs font-black text-gray-500 hover:text-blue-600">إعلاناتي</a><a href="add-ad.html" class="bg-blue-600 text-white px-5 py-2.5 rounded-xl font-black text-xs shadow-md">+ بيع دلوقتي</a>`;
             document.getElementById('mobile-account-link').href = 'my-ads.html';
-            listenToUnreadMessages();
         }
         fetchAds();
     </script>
