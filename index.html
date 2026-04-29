@@ -42,7 +42,7 @@
                         <button class="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl font-black text-sm shadow-lg">📞 اتصـــــال</button>
                         <div class="grid grid-cols-2 gap-3">
                             <button class="bg-green-500 hover:bg-green-600 text-white py-4 rounded-2xl font-black text-sm">💬 واتساب</button>
-                            <a href="messages.html" class="bg-gray-800 hover:bg-black text-white py-4 rounded-2xl font-black text-sm flex items-center justify-center">✉ دردشة</a>
+                            <button id="chat-btn" class="bg-gray-800 hover:bg-black text-white py-4 rounded-2xl font-black text-sm flex items-center justify-center">✉ دردشة</button>
                         </div>
                     </div>
                 </div>
@@ -163,6 +163,15 @@
             document.getElementById('modal-location').innerText = ad.location;
             document.getElementById('modal-desc').innerText = ad.description;
             document.getElementById('modal-img').src = getSafeImageUrl(ad.image_url);
+
+            // برمجة زر الدردشة
+            document.getElementById('chat-btn').onclick = () => {
+                const user = JSON.parse(localStorage.getItem('user'));
+                if (!user) { window.location.href = 'login.html'; return; }
+                if (user.email === ad.seller_email) { alert("هذا إعلانك الخاص!"); return; }
+                window.location.href = `messages.html?seller=${ad.seller_email}&ad=${encodeURIComponent(ad.title)}`;
+            };
+
             document.getElementById('product-modal').style.display = 'flex';
             document.body.style.overflow = 'hidden';
         }
