@@ -26,12 +26,13 @@
                 <button type="button" onclick="toggleLocationModal()" class="text-gray-400 text-xl font-bold">✕</button>
             </div>
             <div class="p-4">
-                <input type="text" id="location-search-input" placeholder="ابحث عن مدينة، مركز أو محافظة..." class="w-full p-3 mb-4 rounded-xl border border-gray-100 outline-none focus:ring-2 focus:ring-blue-500 text-sm text-right bg-gray-50" oninput="filterLocations()">
+                <input type="text" id="location-search-input" placeholder="ابحث عن مدينة أو قرية..." class="w-full p-3 mb-4 rounded-xl border outline-none text-right text-sm" oninput="filterLocations()">
                 <div id="location-list" class="max-h-[350px] overflow-y-auto space-y-1 no-scrollbar text-right"></div>
             </div>
         </div>
     </div>
 
+    <!-- Header -->
     <header class="bg-white p-4 border-b shadow-sm sticky top-0 z-50">
         <div class="container mx-auto flex items-center justify-between">
             <a href="index.html" class="flex items-center gap-2">
@@ -39,7 +40,7 @@
                 <span class="text-xl font-black tracking-tighter">روبا<span class="text-blue-600">بيكيا</span></span>
             </a>
             <h1 class="text-lg font-black text-gray-800 hidden sm:block">نشر إعلان جديد</h1>
-            <a href="index.html" class="text-gray-400 hover:text-red-500 font-bold text-2xl transition-all">✕</a>
+            <a href="index.html" class="text-gray-400 hover:text-red-500 font-bold text-2xl">✕</a>
         </div>
     </header>
 
@@ -53,7 +54,7 @@
                         <h3 class="text-lg font-black text-gray-800 flex items-center gap-2">📸 صور المنتج</h3>
                         <span id="photo-count" class="text-[10px] font-bold text-gray-400 bg-gray-50 px-2 py-1 rounded-lg">0 / 17</span>
                     </div>
-                    <div id="image-previews" class="grid grid-cols-3 sm:grid-cols-4 gap-3 text-center">
+                    <div id="image-previews" class="grid grid-cols-3 sm:grid-cols-4 gap-3 text-center text-gray-300">
                         <label id="upload-label" class="aspect-square border-2 border-dashed border-gray-200 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-all group">
                             <span class="text-2xl">➕</span>
                             <input type="file" id="ad-images" class="hidden" multiple accept="image/*" onchange="handleImageSelect(event)">
@@ -66,10 +67,9 @@
                 <!-- 2. Ad Details -->
                 <section class="space-y-5">
                     <h3 class="text-lg font-black text-gray-800 mb-2 flex items-center gap-2">📝 تفاصيل الإعلان</h3>
-
                     <div>
                         <label class="text-xs font-black text-gray-600 block mb-2 mr-1">عنوان الإعلان</label>
-                        <input type="text" id="title" required placeholder="مثلاً: ايفون 13 برو ماكس بحالة الزيرو" class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm">
+                        <input type="text" id="title" required placeholder="ماذا تبيع؟" class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm">
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -87,24 +87,23 @@
                         </div>
                         <div id="sub-category-container" class="hidden fade-in-down">
                             <label class="text-xs font-black text-gray-600 block mb-2 mr-1">الفئة الفرعية</label>
-                            <select id="sub-category" class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 text-sm appearance-none">
-                            </select>
+                            <select id="sub-category" class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 text-sm appearance-none"></select>
                         </div>
                         <div>
-                            <label class="text-xs font-black text-gray-600 block mb-2 mr-1 text-right">السعر (ج.م)</label>
-                            <input type="number" id="price" required placeholder="0.00" class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm">
+                            <label class="text-xs font-black text-gray-600 block mb-2 mr-1">السعر (ج.م)</label>
+                            <input type="number" id="price" required placeholder="0.00" class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 text-sm">
                         </div>
                     </div>
 
                     <div>
                         <label class="text-xs font-black text-gray-600 block mb-2 mr-1">وصف المنتج</label>
-                        <textarea id="description" rows="5" required placeholder="اكتب كل تفاصيل المنتج، حالته، مدة الاستخدام، الملحقات..." class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm resize-none"></textarea>
+                        <textarea id="description" rows="5" required placeholder="اكتب تفاصيل المنتج..." class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 text-sm resize-none"></textarea>
                     </div>
                 </section>
 
                 <hr class="border-gray-50">
 
-                <!-- 3. Location (Synced with Index List) -->
+                <!-- 3. Location (Synced with main list) -->
                 <section class="space-y-4">
                     <h3 class="text-lg font-black text-gray-800 mb-4 flex items-center gap-2">📍 الموقع</h3>
                     <div onclick="toggleLocationModal()" class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 text-sm text-right cursor-pointer flex justify-between items-center group hover:border-blue-500 transition-all">
@@ -114,9 +113,8 @@
                     <input type="hidden" id="location" required>
                 </section>
 
-                <div class="pt-6 text-center">
+                <div class="pt-6">
                     <button type="submit" id="submit-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl font-black text-lg shadow-lg active:scale-95 transition-all">نشر الإعلان الآن</button>
-                    <p class="text-[10px] text-gray-400 mt-4 font-bold italic">جميع إعلاناتك تخضع للمراجعة قبل النشر</p>
                 </div>
             </form>
         </div>
@@ -127,7 +125,7 @@
             <div class="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-4xl mx-auto">✓</div>
             <h3 class="text-xl font-black text-gray-800">تم الحفظ بنجاح!</h3>
             <p class="text-sm text-gray-400 font-bold">إعلانك متاح الآن للجميع في الموقع</p>
-            <button onclick="window.location.href='index.html'" class="w-full bg-gray-900 text-white py-4 rounded-2xl font-black text-sm transition-all active:scale-95">العودة للرئيسية</button>
+            <button onclick="window.location.href='index.html'" class="w-full bg-gray-900 text-white py-4 rounded-2xl font-black text-sm">العودة للرئيسية</button>
         </div>
     </div>
 
@@ -136,7 +134,7 @@
 
         // القائمة الكاملة والموحدة مع الصفحة الرئيسية
         const egyptLocations = [
-            "القاهرة - مدينة نصر", "القاهرة - التجمع الخامس", "القاهرة - مصر الجديدة", "القاهرة - المعادي", "القاهرة - الرحاب", "القاهرة - مدينتي", "القاهرة - الشروق", "القاهرة - العبور", "القاهرة - حلوان", "القاهرة - المقطم", "القاهرة - الزمالك", "القاهرة - وسط البلد", "القاهرة - شبرا", "القاهرة - عين شمس", "القاهرة - المطرية", "القاهرة - المرج", "القاهرة - حدائق القبة", "القاهرة - الزيتون", "القاهرة - الوايلي", "القاهرة - عابدين", "القاهرة - السيدة زينب", "القاهرة - منشأة ناصر", "القاهرة - بدر", "القاهرة - 15 مايو",
+            "كل مصر", "القاهرة - مدينة نصر", "القاهرة - التجمع الخامس", "القاهرة - مصر الجديدة", "القاهرة - المعادي", "القاهرة - الرحاب", "القاهرة - مدينتي", "القاهرة - الشروق", "القاهرة - العبور", "القاهرة - حلوان", "القاهرة - المقطم", "القاهرة - الزمالك", "القاهرة - وسط البلد", "القاهرة - شبرا", "القاهرة - عين شمس", "القاهرة - المطرية", "القاهرة - المرج", "القاهرة - حدائق القبة", "القاهرة - الزيتون", "القاهرة - الوايلي", "القاهرة - عابدين", "القاهرة - السيدة زينب", "القاهرة - منشأة ناصر", "القاهرة - بدر", "القاهرة - 15 مايو",
             "الجيزة - 6 أكتوبر", "الجيزة - الشيخ زايد", "الجيزة - الهرم", "الجيزة - فيصل", "الجيزة - المهندسين", "الجيزة - الدقي", "الجيزة - إمبابة", "الجيزة - الوراق", "الجيزة - بولاق الدكرور", "الجيزة - العمرانية", "الجيزة - الحوامدية", "الجيزة - البدرشين", "الجيزة - العياط", "الجيزة - أطفيح", "الجيزة - الصف", "الجيزة - الواحات البحرية", "الجيزة - كرداسة", "الجيزة - أوسيم",
             "الإسكندرية - سموحة", "الإسكندرية - ميامي", "الإسكندرية - سيدي بشر", "الإسكندرية - العجمي", "الإسكندرية - المنتزة", "الإسكندرية - لوران", "الإسكندرية - جليم", "الإسكندرية - الشاطبي", "الإسكندرية - محرم بك", "الإسكندرية - العصافرة", "الإسكندرية - السيوف", "الإسكندرية - سيدي جابر", "الإسكندرية - الإبراهيمية", "الإسكندرية - البيطاش", "الإسكندرية - برج العرب", "الإسكندرية - العامرية", "الإسكندرية - كفر عبده", "الإسكندرية - رشدي", "الإسكندرية - ستانلي",
             "القليوبية - بنها", "القليوبية - شبرا الخيمة", "القليوبية - قليوب", "القليوبية - الخانكة", "القليوبية - طوخ", "القليوبية - قها", "القليوبية - كفر شكر", "القليوبية - شبين القناطر", "القليوبية - القناطر الخيرية", "القليوبية - الخصوص", "القليوبية - العبور الجديدة",
@@ -152,12 +150,12 @@
             "السويس - السويس", "السويس - حي الأربعين", "السويس - حي الجناين", "السويس - حي فيصل", "السويس - حي السويس", "السويس - حي عتاقة",
             "الفيوم - الفيوم", "الفيوم - الفيوم الجديدة", "الفيوم - طامية", "الفيوم - سنورس", "الفيوم - إطسا", "الفيوم - أبشواي", "الفيوم - يوسف الصديق",
             "بني سويف - بني سويف", "بني سويف - بني سويف الجديدة", "بني سويف - الواسطى", "بني سويف - ناصر", "بني سويف - الفشن", "بني سويف - ببا", "بني سويف - سمسطا", "بني سويف - اهناسيا",
-            "المنيا - المنيا", "المنيا - المنيا الجديدة", "المنيا - مغاغة", "المنيا - بني مزار", "المنيا - مطاي", "المنيا - سمالوط", "المنيا - أبو قرقاص", "المنيا - ملوي", "المنيا - dير مواس", "المنيا - العدوة",
-            "أسيوط - أسيوط", "أسيوط - أسيوط الجديدة", "أسيوط - dيروط", "أسيوط - منفلوط", "أسيوط - القوصية", "أسيوط - أبنوب", "أسيوط - أبو تيج", "أسيوط - الغنايم", "أسيوط - ساحل سليم", "أسيوط - البداري", "أسيوط - صدفا", "أسيوط - الفتح",
-            "سوهاج - سوهاج", "سوهاج - سوهاج الجديدة", "سوهاج - أخميم", "سوهاج - طهطا", "سوهاج - طما", "سوهاج - جرجا", "سوهاج - المنشأة", "سوهاج - المراغة", "سوهاج - البلينا", "سوهاج - dar السلام", "سوهاج - جهينة", "سوهاج - ساقلته",
+            "المنيا - المنيا", "المنيا - المنيا الجديدة", "المنيا - مغاغة", "المنيا - بني مزار", "المنيا - مطاي", "المنيا - سمالوط", "المنيا - أبو قرقاص", "المنيا - ملوي", "المنيا - دير مواس", "المنيا - العدوة",
+            "أسيوط - أسيوط", "أسيوط - أسيوط الجديدة", "أسيوط - ديروط", "أسيوط - منفلوط", "أسيوط - القوصية", "أسيوط - أبنوب", "أسيوط - أبو تيج", "أسيوط - الغنايم", "أسيوط - ساحل سليم", "أسيوط - البداري", "أسيوط - صدفا", "أسيوط - الفتح",
+            "سوهاج - سوهاج", "سوهاج - سوهاج الجديدة", "سوهاج - أخميم", "سوهاج - طهطا", "سوهاج - طما", "سوهاج - جرجا", "سوهاج - المنشأة", "سوهاج - المراغة", "سوهاج - البلينا", "سوهاج - دار السلام", "سوهاج - جهينة", "سوهاج - ساقلته",
             "قنا - قنا", "قنا - قنا الجديدة", "قنا - نجع حمادي", "قنا - دشنا", "قنا - قوص", "قنا - قفط", "قنا - نقادة", "قنا - فرشوط", "قنا - أبو تشت", "قنا - الوقف",
             "الأقصر - الأقصر", "الأقصر - الأقصر الجديدة", "الأقصر - طيبة الجديدة", "الأقصر - إسنا", "الأقصر - أرمنت", "الأقصر - القرنة", "الأقصر - البياضية", "الأقصر - الطود",
-            "أسوان - أسوان", "أسوان - أسوان الجديدة", "أسوان - dراو", "أسوان - كوم أمبو", "أسوان - إدفو", "أسوان - نصر النوبة", "أسوان - كلابشة", "أسوان - الرديسية", "أسوان - البصيلية", "أسوان - السباعية", "أسوان - أبو سمبل السياحية",
+            "أسوان - أسوان", "أسوان - أسوان الجديدة", "أسوان - دراو", "أسوان - كوم أمبو", "أسوان - إدفو", "أسوان - نصر النوبة", "أسوان - كلابشة", "أسوان - الرديسية", "أسوان - البصيلية", "أسوان - السباعية", "أسوان - أبو سمبل السياحية",
             "البحر الأحمر - الغردقة", "البحر الأحمر - رأس غارب", "البحر الأحمر - سفاجا", "البحر الأحمر - القصير", "البحر الأحمر - مرسى علم", "البحر الأحمر - شلاتين", "البحر الأحمر - حلايب",
             "الوادي الجديد - الخارجة", "الوادي الجديد - الداخلة", "الوادي الجديد - الفرافرة", "الوادي الجديد - باريس", "الوادي الجديد - بلاط",
             "مطروح - مرسى مطروح", "مطروح - الحمام", "مطروح - العلمين", "مطروح - الضبعة", "مطروح - سيوة", "مطروح - النجيلة", "مطروح - براني", "مطروح - السلوم",
@@ -187,13 +185,14 @@
             } else { subContainer.classList.add('hidden'); }
         });
 
-        // Location Logic
+        // Location Sync Logic
         window.toggleLocationModal = function() {
             const m = document.getElementById('location-modal');
             m.style.display = (m.style.display === 'flex' ? 'none' : 'flex');
             if(m.style.display === 'flex') {
                 document.getElementById('location-search-input').value = '';
                 renderLocations(egyptLocations);
+                setTimeout(() => document.getElementById('location-search-input').focus(), 100);
             }
         };
 
@@ -204,60 +203,72 @@
 
         window.filterLocations = function() {
             const query = document.getElementById('location-search-input').value.toLowerCase();
-            const filtered = egyptLocations.filter(loc => loc.toLowerCase().includes(query));
-            renderLocations(filtered);
+            renderLocations(egyptLocations.filter(loc => loc.toLowerCase().includes(query)));
         };
 
         window.selectLocation = function(loc) {
             document.getElementById('selected-location-text').innerText = loc;
-            document.getElementById('selected-location-text').classList.remove('text-gray-400');
-            document.getElementById('selected-location-text').classList.add('text-gray-800', 'font-black');
+            document.getElementById('selected-location-text').classList.replace('text-gray-400', 'text-gray-800');
             document.getElementById('location').value = loc;
             toggleLocationModal();
         };
 
         // Multi-Image Logic (Up to 17)
+        let selectedFiles = [];
         window.handleImageSelect = function(e) {
-            const files = e.target.files;
+            const files = Array.from(e.target.files);
+            if (selectedFiles.length + files.length > 17) { alert("عفواً، أقصى حد هو 17 صورة"); return; }
+
+            selectedFiles = [...selectedFiles, ...files];
+            document.getElementById('photo-count').innerText = `${selectedFiles.length} / 17`;
+            renderPreviews();
+        };
+
+        function renderPreviews() {
             const container = document.getElementById('image-previews');
-            if (files.length > 17) { alert("عفواً، أقصى حد هو 17 صورة"); e.target.value = ""; return; }
-
-            document.getElementById('photo-count').innerText = `${files.length} / 17`;
-            const existingImgs = container.querySelectorAll('.img-item');
-            existingImgs.forEach(img => img.remove());
-
-            for (let file of files) {
+            const label = document.getElementById('upload-label');
+            container.innerHTML = ''; container.appendChild(label);
+            selectedFiles.forEach((file, index) => {
                 const reader = new FileReader();
-                reader.onload = function(event) {
+                reader.onload = (event) => {
                     const div = document.createElement('div');
-                    div.className = "img-item aspect-square rounded-2xl border border-gray-100 overflow-hidden relative animate-in zoom-in duration-300";
-                    div.innerHTML = `<img src="${event.target.result}" class="w-full h-full object-cover">`;
+                    div.className = "relative aspect-square rounded-2xl border overflow-hidden shadow-sm";
+                    div.innerHTML = `<img src="${event.target.result}" class="w-full h-full object-cover"><button type="button" onclick="removeImage(${index})" class="absolute top-1 right-1 bg-red-500 text-white w-5 h-5 rounded-full text-[10px] flex items-center justify-center">✕</button>`;
                     container.appendChild(div);
                 };
                 reader.readAsDataURL(file);
-            }
+            });
+        }
+
+        window.removeImage = (index) => {
+            selectedFiles.splice(index, 1);
+            renderPreviews();
+            document.getElementById('photo-count').innerText = `${selectedFiles.length} / 17`;
         };
 
+        // Submit Logic
         document.getElementById('add-ad-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submit-btn');
             btn.innerText = "جاري الحفظ..."; btn.disabled = true;
 
             const user = JSON.parse(localStorage.getItem('user'));
-            const adData = {
-                title: document.getElementById('title').value,
-                main_category: mainCatSelect.value,
-                sub_category: subSelect.value || "",
-                price: parseFloat(document.getElementById('price').value) || 0,
-                description: document.getElementById('description').value,
-                location: document.getElementById('location').value,
-                seller_email: user ? user.email : 'guest',
-                image_url: "" // سنقوم بربط رفع الصور الفعلي لاحقاً
-            };
-
-            if (!adData.location) { alert("يرجى اختيار الموقع من القائمة"); btn.disabled = false; btn.innerText = "نشر الإعلان الآن"; return; }
+            if (!document.getElementById('location').value) { alert("يرجى اختيار الموقع من القائمة"); btn.disabled = false; btn.innerText = "نشر الإعلان الآن"; return; }
 
             try {
+                // ملاحظة: لرفع الصور فعلياً نحتاج لاستخدام supabase.storage
+                // حالياً سنقوم برفع روابط الصور الافتراضية أو أول صورة إذا كانت متاحة
+                const adData = {
+                    title: document.getElementById('title').value,
+                    main_category: mainCatSelect.value,
+                    sub_category: document.getElementById('sub-category').value || "",
+                    price: parseFloat(document.getElementById('price').value) || 0,
+                    description: document.getElementById('description').value,
+                    location: document.getElementById('location').value,
+                    seller_email: user ? user.email : 'guest',
+                    image_url: "" // سيتم تحديثه لاحقاً بروابط التخزين الحقيقية
+                };
+
                 const { error } = await supabase.from('ads').insert([adData]);
                 if (error) throw error;
                 document.getElementById('success-modal').style.display = 'flex';
