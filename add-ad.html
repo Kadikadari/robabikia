@@ -11,8 +11,6 @@
         .logo-gradient { background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         #location-modal { display: none; backdrop-filter: blur(8px); }
-        .fade-in-down { animation: fadeInDown 0.3s ease-out; }
-        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body class="min-h-screen flex flex-col text-right">
@@ -36,7 +34,7 @@
                 <div class="logo-gradient text-white w-10 h-10 flex items-center justify-center rounded-xl font-black text-xl shadow-lg">ر</div>
                 <span class="text-xl font-black tracking-tighter">روبا<span class="text-blue-600">بيكيا</span></span>
             </a>
-            <h1 id="page-title" class="text-lg font-black text-gray-800 hidden sm:block">نشر إعلان جديد</h1>
+            <h1 id="page-title" class="text-lg font-black text-gray-800">نشر إعلان جديد</h1>
             <a href="index.html" class="text-gray-400 hover:text-red-500 font-bold text-2xl transition-all">✕</a>
         </div>
     </header>
@@ -63,7 +61,6 @@
                         <label class="text-xs font-black text-gray-600 block mb-2 mr-1">عنوان الإعلان</label>
                         <input type="text" id="title" required placeholder="ماذا تبيع؟" class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 text-sm">
                     </div>
-
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                         <div>
                             <label class="text-xs font-black text-gray-600 block mb-2 mr-1">الفئة الأساسية</label>
@@ -80,7 +77,7 @@
                                 <option value="animals">حيوانات</option>
                             </select>
                         </div>
-                        <div id="sub-category-container" class="hidden fade-in-down">
+                        <div id="sub-category-container" class="hidden">
                             <label class="text-xs font-black text-gray-600 block mb-2 mr-1">الفئة الفرعية</label>
                             <select id="sub-category" class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 text-sm appearance-none"></select>
                         </div>
@@ -89,7 +86,6 @@
                             <input type="number" id="price" required placeholder="0" class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 text-sm">
                         </div>
                     </div>
-
                     <div>
                         <label class="text-xs font-black text-gray-600 block mb-2 mr-1">وصف المنتج</label>
                         <textarea id="description" rows="5" required placeholder="اكتب تفاصيل المنتج..." class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 text-sm resize-none"></textarea>
@@ -98,7 +94,6 @@
 
                 <section class="space-y-5">
                     <h3 class="text-lg font-black text-gray-800 mb-2">📞 خيارات التواصل (اختيارية)</h3>
-                    <p class="text-[10px] text-gray-400 -mt-3">الدردشة داخل الموقع مفعلة دائماً لخصوصيتك وسرعة تواصلك.</p>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                         <div>
                             <label class="text-xs font-black text-gray-600 block mb-2 mr-1">رقم الهاتف</label>
@@ -128,7 +123,7 @@
     </main>
 
     <div id="success-modal" class="fixed inset-0 z-[1000] bg-black/60 hidden items-center justify-center p-4 backdrop-blur-sm text-center">
-        <div class="bg-white rounded-3xl p-8 max-w-sm w-full space-y-6 animate-in zoom-in duration-300">
+        <div class="bg-white rounded-3xl p-8 max-w-sm w-full space-y-6">
             <div class="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-4xl mx-auto">✓</div>
             <h3 class="text-xl font-black text-gray-800" id="success-title">تم النشر بنجاح!</h3>
             <button onclick="window.location.href='my-ads.html'" class="w-full bg-gray-900 text-white py-4 rounded-2xl font-black text-sm">العودة لإعلاناتي</button>
@@ -168,24 +163,17 @@
         async function loadAdData() {
             const { data, error } = await supabase.from('ads').select('*').eq('id', editId).single();
             if (error) return;
-
             document.getElementById('title').value = data.title;
             document.getElementById('price').value = data.price;
             document.getElementById('description').value = data.description;
             document.getElementById('main-category').value = data.main_category;
             document.getElementById('phone').value = data.phone || '';
             document.getElementById('whatsapp').value = data.whatsapp || '';
-
             updateSubCategories(data.main_category);
             document.getElementById('sub-category').value = data.sub_category;
-
             document.getElementById('location').value = data.location;
             document.getElementById('selected-location-text').innerText = data.location;
-            document.getElementById('selected-location-text').classList.add('text-gray-800');
-
-            try {
-                existingImages = JSON.parse(data.image_url);
-            } catch(e) { existingImages = [data.image_url]; }
+            try { existingImages = JSON.parse(data.image_url); } catch(e) { existingImages = [data.image_url]; }
             renderPreviews();
         }
 
@@ -234,22 +222,13 @@
             const container = document.getElementById('image-previews');
             const label = document.getElementById('upload-label');
             container.innerHTML = ''; container.appendChild(label);
-
             existingImages.forEach((url, i) => {
-                const div = createPreviewElement(url, () => {
-                    existingImages.splice(i, 1);
-                    renderPreviews();
-                });
+                const div = createPreviewElement(url, () => { existingImages.splice(i, 1); renderPreviews(); });
                 container.appendChild(div);
             });
-
             newFiles.forEach((file, i) => {
                 const url = URL.createObjectURL(file);
-                const div = createPreviewElement(url, () => {
-                    newFiles.splice(i, 1);
-                    URL.revokeObjectURL(url);
-                    renderPreviews();
-                });
+                const div = createPreviewElement(url, () => { newFiles.splice(i, 1); renderPreviews(); });
                 container.appendChild(div);
             });
             document.getElementById('photo-count').innerText = `${existingImages.length + newFiles.length} / 17`;
@@ -258,7 +237,7 @@
         function createPreviewElement(src, onRemove) {
             const div = document.createElement('div');
             div.className = "relative aspect-square rounded-2xl border overflow-hidden shadow-sm bg-gray-50";
-            div.innerHTML = `<img src="${src}" class="w-full h-full object-cover"><button type="button" class="absolute top-1 right-1 bg-red-500 text-white w-6 h-6 rounded-full text-xs flex items-center justify-center shadow-md">✕</button>`;
+            div.innerHTML = `<img src="${src}" class="w-full h-full object-cover"><button type="button" class="absolute top-1 right-1 bg-red-500 text-white w-6 h-6 rounded-full text-xs flex items-center justify-center">✕</button>`;
             div.querySelector('button').onclick = onRemove;
             return div;
         }
@@ -274,18 +253,13 @@
                         const canvas = document.createElement('canvas');
                         let width = img.width;
                         let height = img.height;
-                        if (width > height) {
-                            if (width > maxWidth) { height *= maxWidth / width; width = maxWidth; }
-                        } else {
-                            if (height > maxWidth) { width *= maxWidth / height; height = maxWidth; }
-                        }
+                        if (width > height) { if (width > maxWidth) { height *= maxWidth / width; width = maxWidth; } }
+                        else { if (height > maxWidth) { width *= maxWidth / height; height = maxWidth; } }
                         canvas.width = width;
                         canvas.height = height;
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
-                        canvas.toBlob((blob) => {
-                            resolve(new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", { type: 'image/jpeg' }));
-                        }, 'image/jpeg', quality);
+                        canvas.toBlob((blob) => { resolve(new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", { type: 'image/jpeg' })); }, 'image/jpeg', quality);
                     };
                 };
             });
@@ -295,10 +269,8 @@
             e.preventDefault();
             const btn = document.getElementById('submit-btn');
             btn.disabled = true; btn.innerText = "جاري الحفظ...";
-
             try {
                 let finalImages = [...existingImages];
-
                 for (let file of newFiles) {
                     const compressed = await compressImage(file);
                     const name = `ad-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.jpg`;
@@ -307,35 +279,23 @@
                     const { data } = supabase.storage.from('ad-images').getPublicUrl(name);
                     finalImages.push(data.publicUrl);
                 }
-
                 const adData = {
                     title: document.getElementById('title').value,
                     main_category: document.getElementById('main-category').value,
                     sub_category: document.getElementById('sub-category').value,
                     price: parseFloat(document.getElementById('price').value),
                     description: document.getElementById('description').value,
-                    phone: document.getElementById('phone').value,
-                    whatsapp: document.getElementById('whatsapp').value,
+                    phone: document.getElementById('phone').value || null,
+                    whatsapp: document.getElementById('whatsapp').value || null,
                     location: document.getElementById('location').value,
                     image_url: JSON.stringify(finalImages)
                 };
-
                 let error;
-                if (editId) {
-                    const { error: err } = await supabase.from('ads').update(adData).eq('id', editId);
-                    error = err;
-                } else {
-                    adData.seller_email = user.email.toLowerCase();
-                    const { error: err } = await supabase.from('ads').insert([adData]);
-                    error = err;
-                }
-
+                if (editId) { const { error: err } = await supabase.from('ads').update(adData).eq('id', editId); error = err; }
+                else { adData.seller_email = user.email.toLowerCase(); const { error: err } = await supabase.from('ads').insert([adData]); error = err; }
                 if (error) throw error;
                 document.getElementById('success-modal').style.display = 'flex';
-            } catch (err) {
-                alert("خطأ: " + err.message);
-                btn.disabled = false; btn.innerText = "حاول مرة أخرى";
-            }
+            } catch (err) { alert("خطأ في النشر: " + err.message); btn.disabled = false; btn.innerText = "حاول مرة أخرى"; }
         });
     </script>
 </body>
