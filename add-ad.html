@@ -75,12 +75,12 @@
                             <label class="text-xs font-black text-gray-600 block mb-2 mr-1">الفئة الأساسية</label>
                             <select id="main-category" required class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 text-sm appearance-none">
                                 <option value="">اختر الفئة</option>
-                                <option value="عقارات">عقارات</option>
-                                <option value="إلكترونيات">إلكترونيات</option>
-                                <option value="كهربائيات">كهربائيات</option>
-                                <option value="ملابس">ملابس</option>
-                                <option value="أثاث">أثاث</option>
-                                <option value="سيارات">سيارات</option>
+                                <option value="real">عقارات</option>
+                                <option value="elec">إلكترونيات</option>
+                                <option value="elec_appliances">كهربائيات</option>
+                                <option value="fashion">ملابس</option>
+                                <option value="home">أثاث</option>
+                                <option value="cars">سيارات</option>
                             </select>
                         </div>
                         <div id="sub-category-container" class="hidden fade-in-down">
@@ -128,7 +128,6 @@
     <script type="module">
         import { supabase } from "./supabase-config.js";
 
-        // التحقق من تسجيل الدخول فوراً
         const user = JSON.parse(localStorage.getItem('user'));
         if (!user) {
             alert('يجب تسجيل الدخول أولاً لنشر إعلان');
@@ -136,13 +135,14 @@
         }
 
         const egyptLocations = ["القاهرة - مدينة نصر", "القاهرة - التجمع الخامس", "القاهرة - مصر الجديدة", "القاهرة - المعادي", "القاهرة - الرحاب", "القاهرة - مدينتي", "الجيزة - 6 أكتوبر", "الجيزة - الشيخ زايد", "الجيزة - الهرم", "الجيزة - فيصل", "الجيزة - المهندسين", "الإسكندرية - سموحة", "الإسكندرية - ميامي", "الدقهلية - المنصورة", "الشرقية - الزقازيق", "الغربية - طنطا", "المنوفية - شبين الكوم", "البحيرة - دمنهور", "كفر الشيخ", "دمياط", "بور سعيد", "السويس", "الإسماعيلية", "الفيوم", "بني سويف", "المنيا", "أسيوط", "سوهاج", "قنا", "الأقصر", "أسوان", "الغردقة", "مرسى مطروح"];
+
         const subCategories = {
-            'عقارات': ['شراء', 'استئجار', 'أرض', 'شاليهات', 'فيلة'],
-            'إلكترونيات': ['موبايلات وهواتف', 'حواسيب', 'لابتوب', 'اجهزة اخرى'],
-            'كهربائيات': ['كهربائيات المطبخ', 'تلفزيون', 'ثلاجه', 'غسالة', 'تكييف', 'اجهزة اخرى'],
-            'ملابس': ['رجالي', 'نسائي', 'أطفال', 'أحذية', 'ساعات وإكسسوارات', 'مكياج'],
-            'أثاث': ['صالون', 'مطبخ', 'غرفة نوم', 'حديقة'],
-            'سيارات': ['سيارات مستعملة', 'سيارات جديدة', 'موتوسيكلات', 'قطع غيار']
+            'real': ['شراء', 'استئجار', 'أرض', 'شاليهات', 'فيلة'],
+            'elec': ['موبايلات وهواتف', 'حواسيب', 'لابتوب', 'اجهزة اخرى'],
+            'elec_appliances': ['كهربائيات المطبخ', 'تلفزيون', 'ثلاجه', 'غسالة', 'تكييف', 'اجهزة اخرى'],
+            'fashion': ['رجالي', 'نسائي', 'أطفال', 'أحذية', 'ساعات وإكسسوارات', 'مكياج'],
+            'home': ['صالون', 'مطبخ', 'غرفة نوم', 'حديقة'],
+            'cars': ['سيارات مستعملة', 'سيارات جديدة', 'موتوسيكلات', 'قطع غيار']
         };
 
         const mainCatSelect = document.getElementById('main-category');
