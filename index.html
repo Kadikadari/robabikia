@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <!-- الرابط الأساسي (Canonical) -->
+    <link rel="canonical" href="https://robabikia.vercel.app/" />
+
     <!-- كود التحقق من جوجل -->
     <meta name="google-site-verification" content="jMu4iVifbTLLsfA8qMWznF-tMASr0H2gMzTnUOtX748" />
 
@@ -16,6 +19,7 @@
     <meta property="og:title" content="روبابيكيا - بيع واشتري أي حاجة">
     <meta property="og:description" content="أفضل سوق لبيع وشراء المنتجات في مصر. سهل، سريع، ومجاني.">
     <meta property="og:type" content="website">
+    <meta property="og:url" content="https://robabikia.vercel.app/">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
@@ -60,7 +64,7 @@
             <button onclick="closeProductModal()" class="absolute top-4 right-4 z-50 bg-white/80 w-10 h-10 rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-all text-xl font-bold">✕</button>
             <div class="w-full md:w-1/2 h-80 md:h-auto bg-gray-100 relative group text-right">
                 <div id="modal-images" class="w-full h-full flex transition-transform duration-500">
-                    <img id="modal-main-img" src="" class="w-full h-full object-contain">
+                    <img id="modal-main-img" src="" class="w-full h-full object-contain" loading="lazy">
                 </div>
                 <div class="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between px-4 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button onclick="prevImg()" class="bg-white/90 p-3 rounded-full shadow-md hover:bg-white">❮</button>
@@ -273,7 +277,7 @@
                 const img = getSafeImageUrl(ad.image_url);
                 return `
                 <div onclick="openProductModal(${ad.id})" class="ad-card bg-white rounded-2xl border border-gray-100 overflow-hidden flex flex-col shadow-sm text-right">
-                    <div class="h-40 sm:h-48 bg-gray-200"><img src="${img}" class="w-full h-full object-cover"></div>
+                    <div class="h-40 sm:h-48 bg-gray-200"><img src="${img}" class="w-full h-full object-cover" loading="lazy"></div>
                     <div class="p-3">
                         <h3 class="text-xs sm:text-sm font-bold text-gray-800 line-clamp-2 h-8 sm:h-10">${ad.title}</h3>
                         <p class="text-blue-600 font-black text-sm mt-1">${ad.price} ج.م</p>
