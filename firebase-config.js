@@ -1,16 +1,16 @@
-// إعدادات Firebase - سيتم استيرادها في كل الصفحات
+// إعدادات Firebase الحقيقية لمشروع روبابيكيا
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// يجب استبدال هذه البيانات ببيانات مشروعك من Firebase Console
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT_ID.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyBEv3Du_D1vnEhMMFaKyDS5TEMKqJYVML8",
+  authDomain: "robabikia-8b31c.firebaseapp.com",
+  projectId: "robabikia-8b31c",
+  storageBucket: "robabikia-8b31c.firebasestorage.app",
+  messagingSenderId: "499889755035",
+  appId: "1:499889755035:web:f12679ba73ea29a5aa473e",
+  measurementId: "G-QE4TP8QSNM"
 };
 
 // Initialize Firebase
