@@ -138,7 +138,7 @@
         <a href="favorites.html" class="bottom-nav-item flex flex-col items-center gap-1 text-gray-400"><span>❤</span><span class="text-[9px] font-black">المفضلة</span></a>
         <a href="add-ad.html" class="flex flex-col items-center -mt-8 bg-blue-600 text-white w-14 h-14 rounded-full border-4 border-gray-50 flex items-center justify-center shadow-lg active:scale-90 transition-all"><span class="text-2xl font-bold">+</span></a>
         <a href="messages.html" class="bottom-nav-item flex flex-col items-center gap-1 text-gray-400 relative">
-            <span>
+            <span class="relative">
                 💬
                 <div id="msg-badge" class="hidden absolute -top-1.5 -right-2 bg-red-600 text-white text-[8px] font-bold px-1 py-0.5 rounded-full border border-white msg-badge">0</div>
             </span>
@@ -212,7 +212,7 @@
             grid.innerHTML = ads.map(ad => {
                 const img = getSafeImageUrl(ad.image_url);
                 return `
-                <div onclick="openProductModal(${ad.id})" class="ad-card bg-white rounded-2xl border border-gray-100 overflow-hidden flex flex-col shadow-sm text-right cursor-pointer">
+                <div onclick="openProductModal('${ad.id}')" class="ad-card bg-white rounded-2xl border border-gray-100 overflow-hidden flex flex-col shadow-sm text-right cursor-pointer">
                     <div class="h-40 sm:h-48 bg-gray-200"><img src="${img}" class="w-full h-full object-cover" loading="lazy"></div>
                     <div class="p-3">
                         <h3 class="text-xs sm:text-sm font-bold text-gray-800 line-clamp-2 h-8 sm:h-10">${ad.title}</h3>
@@ -223,7 +223,7 @@
         }
 
         window.openProductModal = function(id) {
-            const ad = adsCache.find(a => a.id === id);
+            const ad = adsCache.find(a => a.id == id);
             if (!ad) return;
 
             currentAdImages = [];
@@ -309,7 +309,17 @@
 
         document.getElementById('search-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') { searchTerm = e.target.value; fetchAds(); } });
 
-        const cats = { cars: ['سيارات مستعملة', 'سيارات جديدة', 'موتوسيكلات'], real: ['شراء', 'استئجار', 'أرض'], elec: ['موبايلات', 'حواسيب', 'لابتوب'], elec_appliances: ['ثلاجات', 'غسالات'], fashion: ['رجالي', 'نسائي'], home: ['غرف نوم', 'مطبخ'], services: ['صيانة', 'تنظيف'], jobs: ['توظيف', 'عمل حر'], animals: ['كلاب', 'قطط'] };
+        const cats = {
+            cars: ['سيارات للبيع', 'سيارات للإيجار', 'موتوسيكلات', 'قطع غيار', 'إكسسوارات', 'كاوتش وبطاريات', 'أتوبيسات وشاحنات'],
+            real: ['شقق للبيع', 'شقق للإيجار', 'عقارات تجارية', 'شاليهات ومصايف', 'أراضي', 'فلل للبيع'],
+            elec: ['موبايلات', 'تابلت', 'حواسيب ولابتوب', 'ألعاب فيديو', 'تلفزيونات', 'كاميرات', 'سماعات'],
+            elec_appliances: ['ثلاجات', 'غسالات', 'بوتاجازات', 'تكييفات', 'سخانات', 'أجهزة مطبخ', 'مكاوى'],
+            fashion: ['ملابس رجالي', 'ملابس حريمي', 'ملابس أطفال', 'ساعات', 'أحذية', 'حقائب', 'إكسسوارات'],
+            home: ['غرف نوم', 'غرف معيشة', 'مطبخ وأدواته', 'ديكور ومنزل', 'أثاث خارجي', 'مراتب وسجاد'],
+            services: ['صيانة منزلية', 'نقل عفش', 'دروس خصوصية', 'تنظيف', 'خدمات طبية', 'تصليح إلكترونيات'],
+            jobs: ['مبيعات', 'وظائف إدارية', 'محاسبة', 'سائقين', 'حرفيين', 'تقنية معلومات', 'هندسة'],
+            animals: ['كلاب', 'قطط', 'عصافير وببغاوات', 'خيول', 'أسماك زينة', 'مستلزمات حيوانات']
+        };
         window.toggleSub = (cat, btn, label) => {
             const bar = document.getElementById('sub-menu-bar'), content = document.getElementById('sub-content');
             document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
