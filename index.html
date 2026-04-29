@@ -123,23 +123,30 @@
             } catch (err) { console.error(err); }
         }
 
+        // وظيفة ذكية لاستخراج الصورة الصحيحة
+        function getSafeImageUrl(url) {
+            let defaultImg = "https://via.placeholder.com/400x300?text=Robabikia";
+            if (!url) return defaultImg;
+            try {
+                if (url.startsWith('[') || url.startsWith('{')) {
+                    const parsed = JSON.parse(url);
+                    if (Array.isArray(parsed) && parsed.length > 0) return parsed[0];
+                    if (typeof parsed === 'string') return parsed;
+                }
+                return url;
+            } catch (e) { return url; }
+        }
+
         function renderAds(ads) {
             const grid = document.getElementById('ads-grid');
-            if (ads.length === 0) { grid.innerHTML = '<p class="col-span-full text-center py-20 text-gray-400">لا توجد إعلانات حالياً</p>'; return; }
+            if (!ads || ads.length === 0) { grid.innerHTML = '<p class="col-span-full text-center py-20 text-gray-400">لا توجد إعلانات حالياً</p>'; return; }
             grid.innerHTML = ads.map(ad => {
-                let img = "https://via.placeholder.com/400x300?text=Robabikia";
-                try {
-                    if (ad.image_url) {
-                        if (ad.image_url.startsWith('[')) {
-                            const imgs = JSON.parse(ad.image_url);
-                            if (Array.isArray(imgs) && imgs.length > 0) img = imgs[0];
-                        } else { img = ad.image_url; }
-                    }
-                } catch(e) { if(ad.image_url) img = ad.image_url; }
-
+                const img = getSafeImageUrl(ad.image_url);
                 return `
                 <div onclick="openProductModal(${ad.id})" class="ad-card bg-white rounded-2xl border border-gray-100 overflow-hidden flex flex-col shadow-sm">
-                    <div class="h-40 sm:h-48 bg-gray-200"><img src="${img}" class="w-full h-full object-cover"></div>
+                    <div class="h-40 sm:h-48 bg-gray-200">
+                        <img src="${img}" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/400x300?text=No+Image'">
+                    </div>
                     <div class="p-3 text-right">
                         <h3 class="text-xs sm:text-sm font-bold text-gray-800 line-clamp-2 h-8 sm:h-10">${ad.title}</h3>
                         <p class="text-blue-600 font-black text-sm mt-1">${ad.price} ج.م</p>
@@ -155,14 +162,7 @@
             document.getElementById('modal-price').innerText = ad.price + " ج.م";
             document.getElementById('modal-location').innerText = ad.location;
             document.getElementById('modal-desc').innerText = ad.description;
-            let img = "https://via.placeholder.com/800x600?text=Robabikia";
-            try {
-                if (ad.image_url && ad.image_url.startsWith('[')) {
-                    const imgs = JSON.parse(ad.image_url);
-                    if (Array.isArray(imgs) && imgs.length > 0) img = imgs[0];
-                } else if (ad.image_url) { img = ad.image_url; }
-            } catch(e) { if(ad.image_url) img = ad.image_url; }
-            document.getElementById('modal-img').src = img;
+            document.getElementById('modal-img').src = getSafeImageUrl(ad.image_url);
             document.getElementById('product-modal').style.display = 'flex';
             document.body.style.overflow = 'hidden';
         }
@@ -207,7 +207,6 @@
                         </div>
                         <a href="add-ad.html" class="bg-blue-600 text-white px-5 py-2.5 rounded-xl font-black text-xs shadow-md active:scale-95 transition-all">+ بيع دلوقتي</a>
                     </div>`;
-
                 const mobileAccountLink = document.getElementById('mobile-account-link');
                 if (mobileAccountLink) mobileAccountLink.href = 'my-ads.html';
             }
@@ -217,9 +216,7 @@
             if (e.target.id == 'product-modal') closeProductModal();
             if (e.target.id == 'location-modal') toggleLocationModal();
             const userMenu = document.getElementById('user-menu');
-            if (userMenu && !e.target.closest('.user-container')) {
-                userMenu.classList.remove('active');
-            }
+            if (userMenu && !e.target.closest('.user-container')) { userMenu.classList.remove('active'); }
         };
     </script>
 </body>
