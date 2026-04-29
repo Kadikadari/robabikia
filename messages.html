@@ -13,8 +13,6 @@
         .chat-container { height: calc(100vh - 120px); }
         @media (max-width: 768px) { .chat-container { height: calc(100vh - 80px); } }
         .msg-bubble { max-width: 85%; word-wrap: break-word; }
-        .conv-item { transition: all 0.2s; }
-        .conv-item:active { background-color: #f1f5f9; }
         .unread-dot { width: 10px; height: 10px; background-color: #2563eb; border-radius: 50%; border: 2px solid white; }
     </style>
 </head>
@@ -56,7 +54,6 @@
                     </div>
                 </div>
 
-                <!-- Ad Context Bar -->
                 <div id="ad-context-bar" class="hidden bg-blue-50/50 p-2 px-4 border-b flex items-center gap-3">
                     <img id="ad-context-img" src="" class="w-10 h-10 rounded-lg object-cover border border-white shadow-sm bg-white">
                     <div class="flex-1 overflow-hidden">
@@ -97,10 +94,8 @@
 
         let currentChatId = null;
         let unsubMessages = null;
-        const adsDataCache = new Map();
 
         window.openChat = async function(chatId, otherPartyEmail, adInfo = null) {
-            console.log("Opening Chat:", chatId);
             if (unsubMessages) unsubMessages();
             currentChatId = chatId;
 
@@ -108,20 +103,16 @@
             document.getElementById('active-user-name').innerText = name;
             document.getElementById('active-user-avatar').innerText = name.charAt(0).toUpperCase();
 
-            // Handle UI for Ad Context
             const adBar = document.getElementById('ad-context-bar');
-            const targetAd = adInfo || adsDataCache.get(chatId);
-
-            if (targetAd && targetAd.img) {
+            if (adInfo && adInfo.img) {
                 adBar.classList.remove('hidden');
-                document.getElementById('ad-context-img').src = targetAd.img;
-                document.getElementById('ad-context-title').innerText = targetAd.title;
-                document.getElementById('ad-context-price').innerText = targetAd.price + " ج.م";
+                document.getElementById('ad-context-img').src = adInfo.img;
+                document.getElementById('ad-context-title').innerText = adInfo.title;
+                document.getElementById('ad-context-price').innerText = adInfo.price + " ج.م";
             } else {
                 adBar.classList.add('hidden');
             }
 
-            // UI Switching
             if (window.innerWidth < 768) {
                 document.getElementById('conv-list').classList.add('hidden');
                 document.getElementById('main-header').classList.add('hidden');
@@ -132,11 +123,10 @@
 
             loadMessages(chatId);
 
-            // Mark as read
             const userKey = user.email.replace(/\./g, '_');
             try {
                 await updateDoc(doc(db, "chats", chatId), { [`unreadCount.${userKey}`]: 0 });
-            } catch(e) { console.error("Error marking as read:", e); }
+            } catch(e) {}
         };
 
         window.backToList = function() {
@@ -171,39 +161,34 @@
             e.preventDefault();
             const input = document.getElementById('msg-input');
             const text = input.value.trim();
-            const sendBtn = document.getElementById('send-btn');
-
             if (!text || !currentChatId) return;
 
+            const sendBtn = document.getElementById('send-btn');
             input.value = '';
             sendBtn.disabled = true;
 
             try {
                 const chatRef = doc(db, "chats", currentChatId);
                 const chatSnap = await getDoc(chatRef);
-                if (!chatSnap.exists()) throw new Error("المحادثة غير موجودة");
-
                 const chatData = chatSnap.data();
                 const otherEmail = chatData.participants.find(p => p !== user.email);
                 const otherKey = otherEmail.replace(/\./g, '_');
 
-                // 1. Add Message
                 await addDoc(collection(db, "chats", currentChatId, "messages"), {
                     text: text,
                     sender: user.email,
                     timestamp: serverTimestamp()
                 });
 
-                // 2. Update Chat
                 await updateDoc(chatRef, {
-                    hiddenFor: [],
                     lastMessage: text,
                     lastMessageTime: serverTimestamp(),
+                    hiddenFor: [],
                     [`unreadCount.${otherKey}`]: (chatData.unreadCount?.[otherKey] || 0) + 1
                 });
             } catch (err) {
                 console.error("Send error:", err);
-                alert("فشل في إرسال الرسالة");
+                alert("خطأ في الإرسال");
                 input.value = text;
             } finally {
                 sendBtn.disabled = false;
@@ -211,15 +196,23 @@
         });
 
         function fetchConversations() {
-            // Important: We sort by lastMessageTime to show newest first
-            const q = query(collection(db, "chats"), where("participants", "array-contains", user.email), orderBy("lastMessageTime", "desc"));
+            // أزلنا orderBy من هنا لتجنب الحاجة لفهرس (Index) يدوي
+            const q = query(collection(db, "chats"), where("participants", "array-contains", user.email));
 
             onSnapshot(q, (snapshot) => {
                 const container = document.getElementById('conversations-container');
-                container.innerHTML = snapshot.empty ? '<div class="p-10 text-center text-gray-400 text-xs font-bold">لا توجد محادثات</div>' : '';
+                if (snapshot.empty) {
+                    container.innerHTML = '<div class="p-10 text-center text-gray-400 text-xs font-bold">لا توجد محادثات</div>';
+                    return;
+                }
 
-                snapshot.forEach((docSnap) => {
-                    const chat = docSnap.data();
+                // ترتيب المحادثات برمجياً (الأحدث أولاً)
+                const chats = [];
+                snapshot.forEach(d => chats.push({id: d.id, ...d.data()}));
+                chats.sort((a, b) => (b.lastMessageTime?.seconds || 0) - (a.lastMessageTime?.seconds || 0));
+
+                container.innerHTML = '';
+                chats.forEach((chat) => {
                     if (chat.hiddenFor && chat.hiddenFor.includes(user.email)) return;
 
                     const otherEmail = chat.participants.find(e => e !== user.email);
@@ -229,22 +222,19 @@
                     const userKey = user.email.replace(/\./g, '_');
                     const unread = chat.unreadCount?.[userKey] || 0;
 
-                    if (unread > 0 && currentChatId !== docSnap.id) {
+                    if (unread > 0 && currentChatId !== chat.id) {
                         showBrowserNotification(name, chat.lastMessage);
                     }
-
-                    // Cache ad data for openChat
-                    if (chat.lastAd) adsDataCache.set(docSnap.id, chat.lastAd);
 
                     const adImg = chat.lastAd?.img || '';
                     const avatar = adImg
                         ? `<img src="${adImg}" class="w-12 h-12 rounded-2xl object-cover border shadow-sm">`
                         : `<div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center font-black text-lg">${name.charAt(0).toUpperCase()}</div>`;
 
-                    const item = document.createElement('div');
-                    item.className = `conv-item p-5 flex items-center gap-4 cursor-pointer hover:bg-white border-b border-gray-50 ${currentChatId === docSnap.id ? 'bg-white border-r-4 border-r-blue-600' : ''}`;
-                    item.onclick = () => window.openChat(docSnap.id, otherEmail);
-                    item.innerHTML = `
+                    const div = document.createElement('div');
+                    div.className = `conv-item p-5 flex items-center gap-4 cursor-pointer hover:bg-white border-b border-gray-50 ${currentChatId === chat.id ? 'bg-white border-r-4 border-r-blue-600' : ''}`;
+                    div.onclick = () => window.openChat(chat.id, otherEmail, chat.lastAd);
+                    div.innerHTML = `
                         <div class="relative">${avatar}${unread > 0 ? '<div class="absolute -top-1 -right-1 unread-dot"></div>' : ''}</div>
                         <div class="flex-1 overflow-hidden">
                             <div class="flex justify-between items-center">
@@ -253,10 +243,8 @@
                             </div>
                             <p class="text-[10px] text-gray-400 truncate">${chat.lastMessage || 'بدء محادثة جديدة...'}</p>
                         </div>`;
-                    container.appendChild(item);
+                    container.appendChild(div);
                 });
-            }, (error) => {
-                console.error("Conversations sync error:", error);
             });
         }
 
@@ -272,22 +260,17 @@
             if (!sellerEmail || sellerEmail === user.email) return;
 
             const adData = params.get('ad') ? {
-                title: params.get('ad'),
-                img: params.get('img'),
-                price: params.get('price'),
-                id: params.get('adId')
+                title: params.get('ad'), img: params.get('img'),
+                price: params.get('price'), id: params.get('adId')
             } : null;
 
-            // Search for existing chat
             const q = query(collection(db, "chats"), where("participants", "array-contains", user.email));
             const snap = await getDocs(q);
-            let existingChat = snap.docs.find(d => d.data().participants.includes(sellerEmail));
+            let chat = snap.docs.find(d => d.data().participants.includes(sellerEmail));
 
-            if (existingChat) {
-                if (adData) {
-                    await updateDoc(doc(db, "chats", existingChat.id), { lastAd: adData, hiddenFor: [] });
-                }
-                window.openChat(existingChat.id, sellerEmail, adData || existingChat.data().lastAd);
+            if (chat) {
+                if (adData) await updateDoc(doc(db, "chats", chat.id), { lastAd: adData, hiddenFor: [] });
+                window.openChat(chat.id, sellerEmail, adData || chat.data().lastAd);
             } else {
                 const newC = await addDoc(collection(db, "chats"), {
                     participants: [user.email, sellerEmail],
