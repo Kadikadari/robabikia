@@ -44,12 +44,17 @@
         import { supabase } from "./supabase-config.js";
 
         const user = JSON.parse(localStorage.getItem('user'));
-        if (!user) window.location.href = 'login.html';
 
-        document.getElementById('user-avatar').innerText = user.name.charAt(0).toUpperCase();
+        if (!user || !user.email) {
+            window.location.href = 'login.html';
+        } else {
+            document.getElementById('user-avatar').innerText = (user.name || user.email).charAt(0).toUpperCase();
+            fetchMyAds();
+        }
 
         async function fetchMyAds() {
             try {
+                console.log("Fetching ads for email:", user.email);
                 const { data, error } = await supabase
                     .from('ads')
                     .select('*')
@@ -57,33 +62,42 @@
                     .order('created_at', { ascending: false });
 
                 if (error) throw error;
+                console.log("Ads found:", data);
                 renderMyAds(data);
             } catch (err) {
-                console.error(err);
-                document.getElementById('my-ads-grid').innerHTML = '<p class="col-span-full text-center text-red-500">حدث خطأ في تحميل البيانات</p>';
+                console.error("Supabase error:", err);
+                document.getElementById('my-ads-grid').innerHTML = `<p class="col-span-full text-center text-red-500">حدث خطأ في تحميل البيانات: ${err.message}</p>`;
             }
         }
 
         function renderMyAds(ads) {
             const grid = document.getElementById('my-ads-grid');
-            if (ads.length === 0) {
+            if (!ads || ads.length === 0) {
                 grid.innerHTML = '<div class="col-span-full py-20 text-center"><p class="text-gray-400 font-bold text-lg">لم تقم بنشر أي إعلانات بعد</p><a href="add-ad.html" class="bg-blue-600 text-white px-6 py-3 rounded-2xl font-black mt-4 inline-block shadow-lg">انشر إعلانك الأول الآن</a></div>';
                 return;
             }
             grid.innerHTML = ads.map(ad => {
                 let img = "https://via.placeholder.com/400x300?text=Robabikia";
                 try {
-                    if (ad.image_url.startsWith('[')) {
-                        const imgs = JSON.parse(ad.image_url);
-                        if (imgs.length > 0) img = imgs[0];
-                    } else if (ad.image_url) { img = ad.image_url; }
-                } catch(e) { if(ad.image_url) img = ad.image_url; }
+                    if (ad.image_url) {
+                        if (ad.image_url.startsWith('[') || ad.image_url.startsWith('{')) {
+                            const imgs = JSON.parse(ad.image_url);
+                            if (Array.isArray(imgs) && imgs.length > 0) img = imgs[0];
+                            else if (typeof imgs === 'string') img = imgs;
+                        } else {
+                            img = ad.image_url;
+                        }
+                    }
+                } catch(e) {
+                    console.warn("Error parsing image_url for ad:", ad.id, e);
+                    if(ad.image_url) img = ad.image_url;
+                }
 
                 return `
                 <div class="bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm flex flex-col group transition-all hover:shadow-md text-right">
                     <div class="h-44 bg-gray-100 relative">
-                        <img src="${img}" class="w-full h-full object-cover">
-                        <div class="absolute top-2 left-2 bg-white/90 backdrop-blur px-2 py-1 rounded-lg text-[9px] font-black text-blue-600 shadow-sm">${ad.main_category}</div>
+                        <img src="${img}" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/400x300?text=Image+Error'">
+                        <div class="absolute top-2 left-2 bg-white/90 backdrop-blur px-2 py-1 rounded-lg text-[9px] font-black text-blue-600 shadow-sm">${ad.main_category || 'عام'}</div>
                     </div>
                     <div class="p-4 flex flex-col flex-1">
                         <h3 class="font-black text-gray-800 text-sm mb-1 truncate text-right">${ad.title}</h3>
@@ -112,8 +126,6 @@
         window.editAd = (id) => {
             alert('قريباً: سيتم فتح واجهة تعديل الإعلان رقم ' + id);
         };
-
-        fetchMyAds();
     </script>
 </body>
 </html>

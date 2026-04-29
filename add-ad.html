@@ -47,7 +47,7 @@
         <div class="bg-white rounded-3xl shadow-xl border border-gray-100 p-6 sm:p-10">
             <form id="add-ad-form" class="space-y-8">
 
-                <!-- Photos (Up to 17) -->
+                <!-- Photos -->
                 <section>
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-lg font-black text-gray-800 flex items-center gap-2">📸 صور المنتج</h3>
@@ -59,7 +59,6 @@
                             <input type="file" id="ad-images" class="hidden" multiple accept="image/*" onchange="handleImageSelect(event)">
                         </label>
                     </div>
-                    <p class="text-[10px] text-gray-400 mt-2 font-bold">يمكنك اختيار حتى 17 صورة دفعة واحدة.</p>
                 </section>
 
                 <hr class="border-gray-50">
@@ -76,12 +75,12 @@
                             <label class="text-xs font-black text-gray-600 block mb-2 mr-1">الفئة الأساسية</label>
                             <select id="main-category" required class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 text-sm appearance-none">
                                 <option value="">اختر الفئة</option>
-                                <option value="real">عقارات</option>
-                                <option value="elec">إلكترونيات</option>
-                                <option value="elec_appliances">كهربائيات</option>
-                                <option value="fashion">ملابس</option>
-                                <option value="home">أثاث</option>
-                                <option value="cars">سيارات</option>
+                                <option value="عقارات">عقارات</option>
+                                <option value="إلكترونيات">إلكترونيات</option>
+                                <option value="كهربائيات">كهربائيات</option>
+                                <option value="ملابس">ملابس</option>
+                                <option value="أثاث">أثاث</option>
+                                <option value="سيارات">سيارات</option>
                             </select>
                         </div>
                         <div id="sub-category-container" class="hidden fade-in-down">
@@ -129,18 +128,21 @@
     <script type="module">
         import { supabase } from "./supabase-config.js";
 
-        // القائمة الكاملة الموحدة مع الصفحة الرئيسية
-        const egyptLocations = [
-            "القاهرة - مدينة نصر", "القاهرة - التجمع الخامس", "القاهرة - مصر الجديدة", "القاهرة - المعادي", "القاهرة - الرحاب", "القاهرة - مدينتي", "الجيزة - 6 أكتوبر", "الجيزة - الشيخ زايد", "الجيزة - الهرم", "الجيزة - فيصل", "الجيزة - المهندسين", "الإسكندرية - سموحة", "الإسكندرية - ميامي", "الدقهلية - المنصورة", "الشرقية - الزقازيق", "الغربية - طنطا", "المنوفية - شبين الكوم", "البحيرة - دمنهور", "كفر الشيخ", "دمياط", "بور سعيد", "السويس", "الإسماعيلية", "الفيوم", "بني سويف", "المنيا", "أسيوط", "سوهاج", "قنا", "الأقصر", "أسوان", "الغردقة", "مرسى مطروح"
-        ];
+        // التحقق من تسجيل الدخول فوراً
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (!user) {
+            alert('يجب تسجيل الدخول أولاً لنشر إعلان');
+            window.location.href = 'login.html';
+        }
 
+        const egyptLocations = ["القاهرة - مدينة نصر", "القاهرة - التجمع الخامس", "القاهرة - مصر الجديدة", "القاهرة - المعادي", "القاهرة - الرحاب", "القاهرة - مدينتي", "الجيزة - 6 أكتوبر", "الجيزة - الشيخ زايد", "الجيزة - الهرم", "الجيزة - فيصل", "الجيزة - المهندسين", "الإسكندرية - سموحة", "الإسكندرية - ميامي", "الدقهلية - المنصورة", "الشرقية - الزقازيق", "الغربية - طنطا", "المنوفية - شبين الكوم", "البحيرة - دمنهور", "كفر الشيخ", "دمياط", "بور سعيد", "السويس", "الإسماعيلية", "الفيوم", "بني سويف", "المنيا", "أسيوط", "سوهاج", "قنا", "الأقصر", "أسوان", "الغردقة", "مرسى مطروح"];
         const subCategories = {
-            'real': ['شراء', 'استئجار', 'أرض', 'شاليهات', 'فيلة'],
-            'elec': ['موبايلات وهواتف', 'حواسيب', 'لابتوب', 'اجهزة اخرى'],
-            'elec_appliances': ['كهربائيات المطبخ', 'تلفزيون', 'ثلاجه', 'غسالة', 'تكييف', 'اجهزة اخرى'],
-            'fashion': ['رجالي', 'نسائي', 'أطفال', 'أحذية', 'ساعات وإكسسوارات', 'مكياج'],
-            'home': ['صالون', 'مطبخ', 'غرفة نوم', 'حديقة'],
-            'cars': ['سيارات مستعملة', 'سيارات جديدة', 'موتوسيكلات', 'قطع غيار']
+            'عقارات': ['شراء', 'استئجار', 'أرض', 'شاليهات', 'فيلة'],
+            'إلكترونيات': ['موبايلات وهواتف', 'حواسيب', 'لابتوب', 'اجهزة اخرى'],
+            'كهربائيات': ['كهربائيات المطبخ', 'تلفزيون', 'ثلاجه', 'غسالة', 'تكييف', 'اجهزة اخرى'],
+            'ملابس': ['رجالي', 'نسائي', 'أطفال', 'أحذية', 'ساعات وإكسسوارات', 'مكياج'],
+            'أثاث': ['صالون', 'مطبخ', 'غرفة نوم', 'حديقة'],
+            'سيارات': ['سيارات مستعملة', 'سيارات جديدة', 'موتوسيكلات', 'قطع غيار']
         };
 
         const mainCatSelect = document.getElementById('main-category');
@@ -155,35 +157,30 @@
             } else { subContainer.classList.add('hidden'); }
         });
 
-        // Location Logic
-        window.toggleLocationModal = function() {
+        window.toggleLocationModal = () => {
             const m = document.getElementById('location-modal');
             m.style.display = (m.style.display === 'flex' ? 'none' : 'flex');
-            if(m.style.display === 'flex') {
-                renderLocations(egyptLocations);
-            }
+            if(m.style.display === 'flex') renderLocations(egyptLocations);
         };
 
         function renderLocations(locations) {
-            const list = document.getElementById('location-list');
-            list.innerHTML = locations.map(loc => `<div onclick="selectLocation('${loc}')" class="p-3 hover:bg-blue-50 rounded-xl cursor-pointer font-bold text-sm text-right border-b border-gray-50 last:border-0 transition-all">📍 ${loc}</div>`).join('');
+            document.getElementById('location-list').innerHTML = locations.map(loc => `<div onclick="selectLocation('${loc}')" class="p-3 hover:bg-blue-50 rounded-xl cursor-pointer font-bold text-sm text-right border-b border-gray-50 last:border-0 transition-all">📍 ${loc}</div>`).join('');
         }
 
-        window.filterLocations = function() {
+        window.filterLocations = () => {
             const query = document.getElementById('location-search-input').value.toLowerCase();
             renderLocations(egyptLocations.filter(loc => loc.toLowerCase().includes(query)));
         };
 
-        window.selectLocation = function(loc) {
+        window.selectLocation = (loc) => {
             document.getElementById('selected-location-text').innerText = loc;
             document.getElementById('selected-location-text').classList.replace('text-gray-400', 'text-gray-800');
             document.getElementById('location').value = loc;
             toggleLocationModal();
         };
 
-        // Image Handling (Up to 17)
         let selectedFiles = [];
-        window.handleImageSelect = function(e) {
+        window.handleImageSelect = (e) => {
             const files = Array.from(e.target.files);
             if (selectedFiles.length + files.length > 17) { alert("عفواً، أقصى حد هو 17 صورة"); return; }
             selectedFiles = [...selectedFiles, ...files];
@@ -213,45 +210,36 @@
             document.getElementById('photo-count').innerText = `${selectedFiles.length} / 17`;
         };
 
-        // Final Submit to Supabase
         document.getElementById('add-ad-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submit-btn');
-            btn.innerText = "جاري رفع الصور والبيانات..."; btn.disabled = true;
-
-            const user = JSON.parse(localStorage.getItem('user'));
-            const location = document.getElementById('location').value;
-            if (!location) { alert("يرجى اختيار الموقع"); btn.disabled = false; btn.innerText = "نشر الإعلان الآن"; return; }
+            btn.innerText = "جاري الحفظ..."; btn.disabled = true;
 
             try {
                 let imageUrls = [];
-                // رفع الصور لـ Supabase Storage (Bucket must be 'ad-images' and public)
                 for (let file of selectedFiles) {
-                    const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${file.name.split('.').pop()}`;
-                    const { data, error: uploadError } = await supabase.storage.from('ad-images').upload(fileName, file);
+                    const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}`;
+                    const { error: uploadError } = await supabase.storage.from('ad-images').upload(fileName, file);
                     if (uploadError) throw uploadError;
-
                     const { data: { publicUrl } } = supabase.storage.from('ad-images').getPublicUrl(fileName);
                     imageUrls.push(publicUrl);
                 }
 
-                const adData = {
+                const { error } = await supabase.from('ads').insert([{
                     title: document.getElementById('title').value,
                     main_category: mainCatSelect.value,
-                    sub_category: document.getElementById('sub-category').value || "",
-                    price: parseFloat(document.getElementById('price').value) || 0,
+                    sub_category: document.getElementById('sub-category').value,
+                    price: parseFloat(document.getElementById('price').value),
                     description: document.getElementById('description').value,
-                    location: location,
-                    seller_email: user ? user.email : 'guest',
-                    image_url: JSON.stringify(imageUrls) // حفظ كافة الصور كـ JSON array
-                };
+                    location: document.getElementById('location').value,
+                    seller_email: user.email,
+                    image_url: JSON.stringify(imageUrls)
+                }]);
 
-                const { error } = await supabase.from('ads').insert([adData]);
                 if (error) throw error;
                 document.getElementById('success-modal').style.display = 'flex';
             } catch (err) {
                 alert("خطأ: " + err.message);
-                console.error(err);
             } finally {
                 btn.innerText = "نشر الإعلان الآن"; btn.disabled = false;
             }
