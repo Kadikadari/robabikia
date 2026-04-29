@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>أضف إعلانك - روبابيكيا</title>
+    <title>إدارة الإعلان - روبابيكيا</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Cairo', sans-serif; background-color: #f8fafc; padding-bottom: 40px; }
         .logo-gradient { background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         #location-modal { display: none; backdrop-filter: blur(8px); }
         .fade-in-down { animation: fadeInDown 0.3s ease-out; }
         @keyframes fadeInDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
@@ -25,7 +24,7 @@
                 <button type="button" onclick="toggleLocationModal()" class="text-gray-400 text-xl font-bold">✕</button>
             </div>
             <div class="p-4">
-                <input type="text" id="location-search-input" placeholder="ابحث عن مدينة أو مركز..." class="w-full p-3 mb-4 rounded-xl border border-gray-100 outline-none focus:ring-2 focus:ring-blue-500 text-sm text-right bg-gray-50" oninput="filterLocations()">
+                <input type="text" id="location-search-input" placeholder="ابحث عن مدينة..." class="w-full p-3 mb-4 rounded-xl border border-gray-100 outline-none focus:ring-2 focus:ring-blue-500 text-sm text-right bg-gray-50" oninput="filterLocations()">
                 <div id="location-list" class="max-h-[350px] overflow-y-auto space-y-1 no-scrollbar text-right"></div>
             </div>
         </div>
@@ -37,17 +36,17 @@
                 <div class="logo-gradient text-white w-10 h-10 flex items-center justify-center rounded-xl font-black text-xl shadow-lg">ر</div>
                 <span class="text-xl font-black tracking-tighter">روبا<span class="text-blue-600">بيكيا</span></span>
             </a>
-            <h1 class="text-lg font-black text-gray-800 hidden sm:block">نشر إعلان جديد</h1>
+            <h1 id="page-title" class="text-lg font-black text-gray-800 hidden sm:block">نشر إعلان جديد</h1>
             <a href="index.html" class="text-gray-400 hover:text-red-500 font-bold text-2xl transition-all">✕</a>
         </div>
     </header>
 
     <main class="flex-1 container mx-auto max-w-2xl p-4 py-8">
         <div class="bg-white rounded-3xl shadow-xl border border-gray-100 p-6 sm:p-10">
-            <form id="add-ad-form" class="space-y-8">
+            <form id="ad-form" class="space-y-8">
                 <section>
                     <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-lg font-black text-gray-800 flex items-center gap-2">📸 صور المنتج</h3>
+                        <h3 class="text-lg font-black text-gray-800">📸 صور المنتج</h3>
                         <span id="photo-count" class="text-[10px] font-bold text-gray-400 bg-gray-50 px-2 py-1 rounded-lg">0 / 17</span>
                     </div>
                     <div id="image-previews" class="grid grid-cols-3 sm:grid-cols-4 gap-3 text-center">
@@ -58,13 +57,11 @@
                     </div>
                 </section>
 
-                <hr class="border-gray-50">
-
                 <section class="space-y-5">
-                    <h3 class="text-lg font-black text-gray-800 mb-2 flex items-center gap-2">📝 تفاصيل الإعلان</h3>
+                    <h3 class="text-lg font-black text-gray-800 mb-2">📝 تفاصيل الإعلان</h3>
                     <div>
                         <label class="text-xs font-black text-gray-600 block mb-2 mr-1">عنوان الإعلان</label>
-                        <input type="text" id="title" required placeholder="ماذا تبيع؟" class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm">
+                        <input type="text" id="title" required placeholder="ماذا تبيع؟" class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 text-sm">
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -87,7 +84,7 @@
                         </div>
                         <div>
                             <label class="text-xs font-black text-gray-600 block mb-2 mr-1">السعر (ج.م)</label>
-                            <input type="number" id="price" required placeholder="0.00" class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                            <input type="number" id="price" required placeholder="0" class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 text-sm">
                         </div>
                     </div>
 
@@ -97,19 +94,17 @@
                     </div>
                 </section>
 
-                <hr class="border-gray-50">
-
                 <section class="space-y-4">
-                    <h3 class="text-lg font-black text-gray-800 mb-4 flex items-center gap-2">📍 الموقع</h3>
-                    <div onclick="toggleLocationModal()" class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 text-sm text-right cursor-pointer flex justify-between items-center group hover:border-blue-500 transition-all">
-                        <span id="selected-location-text" class="text-gray-400">اختر الموقع من القائمة...</span>
+                    <h3 class="text-lg font-black text-gray-800 mb-4">📍 الموقع</h3>
+                    <div onclick="toggleLocationModal()" class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 text-sm text-right cursor-pointer flex justify-between items-center hover:border-blue-500 transition-all">
+                        <span id="selected-location-text" class="text-gray-400">اختر الموقع...</span>
                         <span class="text-blue-600">📍</span>
                     </div>
                     <input type="hidden" id="location" required>
                 </section>
 
                 <div class="pt-6">
-                    <button type="submit" id="submit-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl font-black text-lg shadow-lg active:scale-95 transition-all">نشر الإعلان الآن</button>
+                    <button type="submit" id="submit-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl font-black text-lg shadow-lg active:scale-95 transition-all">نشر الإعلان</button>
                 </div>
             </form>
         </div>
@@ -118,8 +113,8 @@
     <div id="success-modal" class="fixed inset-0 z-[1000] bg-black/60 hidden items-center justify-center p-4 backdrop-blur-sm text-center">
         <div class="bg-white rounded-3xl p-8 max-w-sm w-full space-y-6 animate-in zoom-in duration-300">
             <div class="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-4xl mx-auto">✓</div>
-            <h3 class="text-xl font-black text-gray-800">تم الحفظ بنجاح!</h3>
-            <button onclick="window.location.href='index.html'" class="w-full bg-gray-900 text-white py-4 rounded-2xl font-black text-sm">العودة للرئيسية</button>
+            <h3 class="text-xl font-black text-gray-800" id="success-title">تم النشر بنجاح!</h3>
+            <button onclick="window.location.href='my-ads.html'" class="w-full bg-gray-900 text-white py-4 rounded-2xl font-black text-sm">العودة لإعلاناتي</button>
         </div>
     </div>
 
@@ -127,30 +122,65 @@
         import { supabase } from "./supabase-config.js";
 
         const user = JSON.parse(localStorage.getItem('user'));
-        if (!user) { alert('يجب تسجيل الدخول أولاً'); window.location.href = 'login.html'; }
+        if (!user) window.location.href = 'login.html';
+
+        const params = new URLSearchParams(window.location.search);
+        const editId = params.get('edit');
+        let existingImages = [];
+        let newFiles = [];
 
         const egyptLocations = ["القاهرة - مدينة نصر", "القاهرة - التجمع الخامس", "القاهرة - مصر الجديدة", "القاهرة - المعادي", "القاهرة - الرحاب", "القاهرة - مدينتي", "الجيزة - 6 أكتوبر", "الجيزة - الشيخ زايد", "الجيزة - الهرم", "الجيزة - فيصل", "الجيزة - المهندسين", "الإسكندرية - سموحة", "الإسكندرية - ميامي", "الدقهلية - المنصورة", "الشرقية - الزقازيق", "الغربية - طنطا", "المنوفية - شبين الكوم", "البحيرة - دمنهور", "كفر الشيخ", "دمياط", "بور سعيد", "السويس", "الإسماعيلية", "الفيوم", "بني سويف", "المنيا", "أسيوط", "سوهاج", "قنا", "الأقصر", "أسوان", "الغردقة", "مرسى مطروح"];
         const subCategories = {
             'real': ['شراء', 'استئجار', 'أرض', 'شاليهات', 'فيلة'],
             'elec': ['موبايلات وهواتف', 'حواسيب', 'لابتوب', 'اجهزة اخرى'],
-            'elec_appliances': ['كهربائيات المطبخ', 'تلفزيون', 'ثلاجه', 'غسالة', 'تكييف', 'اجهزة اخرى'],
-            'fashion': ['رجالي', 'نسائي', 'أطفال', 'أحذية', 'ساعات وإكسسوارات', 'مكياج'],
+            'elec_appliances': ['ثلاجات', 'غسالات', 'بوتاجازات', 'مكيفات'],
+            'fashion': ['رجالي', 'نسائي', 'أطفال', 'أحذية'],
             'home': ['صالون', 'مطبخ', 'غرفة نوم', 'حديقة'],
             'cars': ['سيارات مستعملة', 'سيارات جديدة', 'موتوسيكلات', 'قطع غيار'],
             'animals': ['كلاب', 'قطط', 'طيور', 'خيول', 'أسماك', 'أخرى']
         };
 
-        const mainCatSelect = document.getElementById('main-category');
-        const subContainer = document.getElementById('sub-category-container');
-        const subSelect = document.getElementById('sub-category');
+        if (editId) {
+            document.getElementById('page-title').innerText = "تعديل الإعلان";
+            document.getElementById('submit-btn').innerText = "حفظ التعديلات";
+            loadAdData();
+        }
 
-        mainCatSelect.addEventListener('change', () => {
-            const mainCat = mainCatSelect.value;
+        async function loadAdData() {
+            const { data, error } = await supabase.from('ads').select('*').eq('id', editId).single();
+            if (error) return;
+
+            document.getElementById('title').value = data.title;
+            document.getElementById('price').value = data.price;
+            document.getElementById('description').value = data.description;
+            document.getElementById('main-category').value = data.main_category;
+
+            // Handle sub category
+            updateSubCategories(data.main_category);
+            document.getElementById('sub-category').value = data.sub_category;
+
+            // Handle location
+            document.getElementById('location').value = data.location;
+            document.getElementById('selected-location-text').innerText = data.location;
+            document.getElementById('selected-location-text').classList.add('text-gray-800');
+
+            // Handle images
+            try {
+                existingImages = JSON.parse(data.image_url);
+            } catch(e) { existingImages = [data.image_url]; }
+            renderPreviews();
+        }
+
+        document.getElementById('main-category').addEventListener('change', (e) => updateSubCategories(e.target.value));
+
+        function updateSubCategories(mainCat) {
+            const container = document.getElementById('sub-category-container');
+            const select = document.getElementById('sub-category');
             if (mainCat && subCategories[mainCat]) {
-                subSelect.innerHTML = subCategories[mainCat].map(sub => `<option value="${sub}">${sub}</option>`).join('');
-                subContainer.classList.remove('hidden');
-            } else { subContainer.classList.add('hidden'); }
-        });
+                select.innerHTML = subCategories[mainCat].map(s => `<option value="${s}">${s}</option>`).join('');
+                container.classList.remove('hidden');
+            } else { container.classList.add('hidden'); }
+        }
 
         window.toggleLocationModal = () => {
             const m = document.getElementById('location-modal');
@@ -158,23 +188,20 @@
             if(m.style.display === 'flex') renderLocations(egyptLocations);
         };
 
-        function renderLocations(locations) {
-            document.getElementById('location-list').innerHTML = locations.map(loc => `<div onclick="selectLocation('${loc}')" class="p-3 hover:bg-blue-50 rounded-xl cursor-pointer font-bold text-sm text-right border-b border-gray-50 last:border-0 transition-all">📍 ${loc}</div>`).join('');
+        function renderLocations(list) {
+            document.getElementById('location-list').innerHTML = list.map(loc => `<div onclick="selectLocation('${loc}')" class="p-3 hover:bg-blue-50 rounded-xl cursor-pointer font-bold text-sm text-right border-b border-gray-50 last:border-0 transition-all">📍 ${loc}</div>`).join('');
         }
 
         window.selectLocation = (loc) => {
             document.getElementById('selected-location-text').innerText = loc;
-            document.getElementById('selected-location-text').classList.replace('text-gray-400', 'text-gray-800');
             document.getElementById('location').value = loc;
             toggleLocationModal();
         };
 
-        let selectedFiles = [];
         window.handleImageSelect = (e) => {
             const files = Array.from(e.target.files);
-            if (selectedFiles.length + files.length > 17) { alert("عفواً، أقصى حد هو 17 صورة"); return; }
-            selectedFiles = [...selectedFiles, ...files];
-            document.getElementById('photo-count').innerText = `${selectedFiles.length} / 17`;
+            if (existingImages.length + newFiles.length + files.length > 17) return alert("أقصى حد 17 صورة");
+            newFiles = [...newFiles, ...files];
             renderPreviews();
         };
 
@@ -182,58 +209,75 @@
             const container = document.getElementById('image-previews');
             const label = document.getElementById('upload-label');
             container.innerHTML = ''; container.appendChild(label);
-            selectedFiles.forEach((file, index) => {
+
+            // Render existing
+            existingImages.forEach((url, i) => {
+                const div = createPreviewElement(url, () => { existingImages.splice(i, 1); renderPreviews(); });
+                container.appendChild(div);
+            });
+
+            // Render new
+            newFiles.forEach((file, i) => {
                 const reader = new FileReader();
-                reader.onload = (event) => {
-                    const div = document.createElement('div');
-                    div.className = "relative aspect-square rounded-2xl border overflow-hidden shadow-sm";
-                    div.innerHTML = `<img src="${event.target.result}" class="w-full h-full object-cover"><button type="button" onclick="removeImage(${index})" class="absolute top-1 right-1 bg-red-500 text-white w-5 h-5 rounded-full text-[10px] flex items-center justify-center shadow-lg">✕</button>`;
+                reader.onload = (e) => {
+                    const div = createPreviewElement(e.target.result, () => { newFiles.splice(i, 1); renderPreviews(); });
                     container.appendChild(div);
                 };
                 reader.readAsDataURL(file);
             });
+            document.getElementById('photo-count').innerText = `${existingImages.length + newFiles.length} / 17`;
         }
 
-        window.removeImage = (index) => {
-            selectedFiles.splice(index, 1);
-            renderPreviews();
-            document.getElementById('photo-count').innerText = `${selectedFiles.length} / 17`;
-        };
+        function createPreviewElement(src, onRemove) {
+            const div = document.createElement('div');
+            div.className = "relative aspect-square rounded-2xl border overflow-hidden shadow-sm";
+            div.innerHTML = `<img src="${src}" class="w-full h-full object-cover"><button type="button" class="absolute top-1 right-1 bg-red-500 text-white w-5 h-5 rounded-full text-[10px] flex items-center justify-center">✕</button>`;
+            div.querySelector('button').onclick = onRemove;
+            return div;
+        }
 
-        document.getElementById('add-ad-form').addEventListener('submit', async (e) => {
+        document.getElementById('ad-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submit-btn');
-            btn.innerText = "جاري الحفظ..."; btn.disabled = true;
+            btn.disabled = true; btn.innerText = "جاري الحفظ...";
 
             try {
-                let imageUrls = [];
-                for (let file of selectedFiles) {
-                    const fileExt = file.name.split('.').pop();
-                    const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+                let finalImages = [...existingImages];
 
-                    const { error: uploadError } = await supabase.storage.from('ad-images').upload(fileName, file);
-                    if (uploadError) throw uploadError;
-                    const { data: { publicUrl } } = supabase.storage.from('ad-images').getPublicUrl(fileName);
-                    imageUrls.push(publicUrl);
+                // Upload new images
+                for (let file of newFiles) {
+                    const name = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+                    await supabase.storage.from('ad-images').upload(name, file);
+                    const { data } = supabase.storage.from('ad-images').getPublicUrl(name);
+                    finalImages.push(data.publicUrl);
                 }
 
-                const { error } = await supabase.from('ads').insert([{
+                const adData = {
                     title: document.getElementById('title').value,
-                    main_category: mainCatSelect.value,
+                    main_category: document.getElementById('main-category').value,
                     sub_category: document.getElementById('sub-category').value,
                     price: parseFloat(document.getElementById('price').value),
                     description: document.getElementById('description').value,
                     location: document.getElementById('location').value,
-                    seller_email: user.email.toLowerCase().trim(),
-                    image_url: JSON.stringify(imageUrls)
-                }]);
+                    image_url: JSON.stringify(finalImages)
+                };
+
+                let error;
+                if (editId) {
+                    const { error: err } = await supabase.from('ads').update(adData).eq('id', editId);
+                    error = err;
+                    document.getElementById('success-title').innerText = "تم التحديث بنجاح!";
+                } else {
+                    adData.seller_email = user.email.toLowerCase();
+                    const { error: err } = await supabase.from('ads').insert([adData]);
+                    error = err;
+                }
 
                 if (error) throw error;
                 document.getElementById('success-modal').style.display = 'flex';
             } catch (err) {
                 alert("خطأ: " + err.message);
-            } finally {
-                btn.innerText = "نشر الإعلان الآن"; btn.disabled = false;
+                btn.disabled = false; btn.innerText = "حاول مرة أخرى";
             }
         });
     </script>

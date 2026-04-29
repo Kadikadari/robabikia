@@ -119,6 +119,8 @@
                 <button onclick="toggleSub('elec_appliances', this, 'الكهربائيات')" class="cat-btn flex flex-col items-center p-2 min-w-[75px] rounded-2xl transition-all"><span class="text-xl">⚡</span><span class="text-[10px] font-bold mt-1">كهربائيات</span></button>
                 <button onclick="toggleSub('fashion', this, 'الملابس')" class="cat-btn flex flex-col items-center p-2 min-w-[75px] rounded-2xl transition-all"><span class="text-xl">👕</span><span class="text-[10px] font-bold mt-1">ملابس</span></button>
                 <button onclick="toggleSub('home', this, 'الأثاث')" class="cat-btn flex flex-col items-center p-2 min-w-[75px] rounded-2xl transition-all"><span class="text-xl">🛋️</span><span class="text-[10px] font-bold mt-1">أثاث</span></button>
+                <button onclick="toggleSub('services', this, 'الخدمات')" class="cat-btn flex flex-col items-center p-2 min-w-[75px] rounded-2xl transition-all"><span class="text-xl">🛠️</span><span class="text-[10px] font-bold mt-1">خدمات</span></button>
+                <button onclick="toggleSub('jobs', this, 'الوظائف')" class="cat-btn flex flex-col items-center p-2 min-w-[75px] rounded-2xl transition-all"><span class="text-xl">💼</span><span class="text-[10px] font-bold mt-1">وظائف</span></button>
                 <button onclick="toggleSub('animals', this, 'الحيوانات')" class="cat-btn flex flex-col items-center p-2 min-w-[75px] rounded-2xl transition-all"><span class="text-xl">🐶</span><span class="text-[10px] font-bold mt-1">حيوانات</span></button>
             </div>
         </div>
@@ -151,36 +153,29 @@
         let activeSubCategory = 'الكل';
         let searchTerm = '';
 
-        const egyptLocations = ["القاهرة - مدينة نصر", "القاهرة - التجمع الخامس", "القاهرة - مصر الجديدة", "القاهرة - المعادي", "القاهرة - الرحاب", "القاهرة - مدينتي", "الجيزة - 6 أكتوبر", "الجيزة - الشيخ زايد", "الجيزة - الهرم", "الجيزة - فيصل", "الجيزة - المهندسين", "الإسكندرية - سموحة", "الإسكندرية - ميامي", "الدقهلية - المنصورة", "الشرقية - الزقازيق", "الغربية - طنطا", "المنوفية - شبين الكوم", "البحيرة - dمنهور", "كفر الشيخ", "دمياط", "بور سعيد", "السويس", "الإسماعيلية", "الفيوم", "بني سويف", "المنيا", "أسيوط", "سوهاج", "قنا", "الأقصر", "أسوان", "الغردقة", "مرسى مطروح"];
+        const egyptLocations = ["القاهرة - مدينة نصر", "القاهرة - التجمع الخامس", "القاهرة - مصر الجديدة", "القاهرة - المعادي", "القاهرة - الرحاب", "القاهرة - مدينتي", "الجيزة - 6 أكتوبر", "الجيزة - الشيخ زايد", "الجيزة - الهرم", "الجيزة - فيصل", "الجيزة - المهندسين", "الإسكندرية - سموحة", "الإسكندرية - ميامي", "الدقهلية - المنصورة", "الشرقية - الزقازيق", "الغربية - طنطا", "المنوفية - شبين الكوم", "البحيرة - دمنهور", "كفر الشيخ", "دمياط", "بور سعيد", "السويس", "الإسماعيلية", "الفيوم", "بني سويف", "المنيا", "أسيوط", "سوهاج", "قنا", "الأقصر", "أسوان", "الغردقة", "مرسى مطروح"];
 
         document.getElementById('current-city-name').innerText = selectedLocation;
 
         async function fetchAds() {
-            let query = supabase.from('ads').select('*');
-
-            if (selectedLocation !== 'كل مصر') query = query.eq('location', selectedLocation);
-            if (activeCategory !== 'all') query = query.eq('main_category', activeCategory);
-            if (activeSubCategory !== 'الكل') query = query.eq('sub_category', activeSubCategory);
-            if (searchTerm) query = query.ilike('title', `%${searchTerm}%`);
+            let queryBuilder = supabase.from('ads').select('*');
+            if (selectedLocation !== 'كل مصر') queryBuilder = queryBuilder.eq('location', selectedLocation);
+            if (activeCategory !== 'all') queryBuilder = queryBuilder.eq('main_category', activeCategory);
+            if (activeSubCategory !== 'الكل') queryBuilder = queryBuilder.eq('sub_category', activeSubCategory);
+            if (searchTerm) queryBuilder = queryBuilder.ilike('title', `%${searchTerm}%`);
 
             try {
-                const { data, error } = await query.order('created_at', { ascending: false });
+                const { data, error } = await queryBuilder.order('created_at', { ascending: false });
                 if (error) throw error;
                 adsCache = data;
                 renderAds(data);
             } catch (err) { console.error(err); }
         }
 
-        // Search Logic
         document.getElementById('search-input').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 searchTerm = e.target.value.trim();
                 fetchAds();
-                // Close any sub-menus if open
-                document.getElementById('sub-menu-bar').classList.remove('active');
-                document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-                activeCategory = 'all';
-                activeSubCategory = 'الكل';
             }
         });
 
@@ -231,9 +226,7 @@
                 const img = getSafeImageUrl(ad.image_url);
                 return `
                 <div onclick="openProductModal(${ad.id})" class="ad-card bg-white rounded-2xl border border-gray-100 overflow-hidden flex flex-col shadow-sm">
-                    <div class="h-40 sm:h-48 bg-gray-200">
-                        <img src="${img}" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/400x300?text=No+Image'">
-                    </div>
+                    <div class="h-40 sm:h-48 bg-gray-200"><img src="${img}" class="w-full h-full object-cover"></div>
                     <div class="p-3 text-right">
                         <h3 class="text-xs sm:text-sm font-bold text-gray-800 line-clamp-2 h-8 sm:h-10">${ad.title}</h3>
                         <p class="text-blue-600 font-black text-sm mt-1">${ad.price} ج.م</p>
@@ -247,13 +240,10 @@
             if (!ad) return;
             currentAdImages = [];
             try {
-                if (ad.image_url && (ad.image_url.startsWith('[') || ad.image_url.startsWith('{'))) {
-                    const parsed = JSON.parse(ad.image_url);
-                    currentAdImages = Array.isArray(parsed) ? parsed : [parsed];
-                } else if (ad.image_url) {
-                    currentAdImages = [ad.image_url];
-                }
-            } catch(e) { if(ad.image_url) currentAdImages = [ad.image_url]; }
+                if (ad.image_url && ad.image_url.startsWith('[')) {
+                    currentAdImages = JSON.parse(ad.image_url);
+                } else { currentAdImages = [ad.image_url]; }
+            } catch(e) { currentAdImages = [ad.image_url]; }
             if (currentAdImages.length === 0) currentAdImages = ["https://via.placeholder.com/800x600?text=No+Images"];
             currentImgIndex = 0;
             showImage(0);
@@ -264,7 +254,6 @@
             document.getElementById('chat-btn').onclick = () => {
                 const user = JSON.parse(localStorage.getItem('user'));
                 if (!user) { window.location.href = 'login.html'; return; }
-                if (user.email === ad.seller_email) { alert("هذا إعلانك الخاص!"); return; }
                 const adImage = getSafeImageUrl(ad.image_url);
                 window.location.href = `messages.html?seller=${ad.seller_email}&adId=${ad.id}&ad=${encodeURIComponent(ad.title)}&img=${encodeURIComponent(adImage)}&price=${ad.price}`;
             };
@@ -278,8 +267,7 @@
         }
 
         window.showImage = function(index) {
-            const img = document.getElementById('modal-main-img');
-            img.src = currentAdImages[index];
+            document.getElementById('modal-main-img').src = currentAdImages[index];
             document.getElementById('photo-index').innerText = index + 1;
             document.getElementById('photo-total').innerText = currentAdImages.length;
         }
@@ -294,6 +282,8 @@
             elec_appliances: ['ثلاجات', 'غسالات', 'بوتاجازات', 'مكيفات'],
             fashion: ['رجالي', 'نسائي', 'أطفال', 'أحذية'],
             home: ['غرف نوم', 'ركنة', 'سجاد', 'مطابخ'],
+            services: ['صيانة', 'تنظيف', 'نقل عفش', 'توصيل', 'فنيين'],
+            jobs: ['بحث عن عمل', 'توظيف', 'عمل حر'],
             animals: ['كلاب', 'قطط', 'عصافير', 'أسماك']
         };
 
@@ -302,28 +292,20 @@
             const content = document.getElementById('sub-content');
             document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
             if (activeCategory === cat) {
-                activeCategory = 'all';
-                activeSubCategory = 'الكل';
-                bar.classList.remove('active');
-                fetchAds();
-                return;
+                activeCategory = 'all'; activeSubCategory = 'الكل';
+                bar.classList.remove('active'); fetchAds(); return;
             }
-            activeCategory = cat;
-            activeSubCategory = 'الكل';
-            btn.classList.add('active');
-            bar.classList.add('active');
+            activeCategory = cat; activeSubCategory = 'الكل';
+            btn.classList.add('active'); bar.classList.add('active');
             content.innerHTML = `
                 <button onclick="filterBySub('${cat}', 'الكل')" class="bg-white border border-blue-200 text-blue-600 px-4 py-2 rounded-full text-xs font-bold hover:bg-blue-600 hover:text-white transition-all shadow-sm">كل ${label}</button>
-                ${cats[cat].map(s => `
-                    <button onclick="filterBySub('${cat}', '${s}')" class="bg-white border border-gray-100 text-gray-600 px-4 py-2 rounded-full text-xs font-bold hover:bg-blue-600 hover:text-white transition-all shadow-sm">${s}</button>
-                `).join('')}
+                ${cats[cat].map(s => `<button onclick="filterBySub('${cat}', '${s}')" class="bg-white border border-gray-100 text-gray-600 px-4 py-2 rounded-full text-xs font-bold hover:bg-blue-600 hover:text-white transition-all shadow-sm">${s}</button>`).join('')}
             `;
             fetchAds();
         };
 
         window.filterBySub = async function(cat, sub) {
-            activeSubCategory = sub;
-            fetchAds();
+            activeSubCategory = sub; fetchAds();
             window.scrollTo({ top: 400, behavior: 'smooth' });
         };
 
@@ -335,7 +317,6 @@
             `;
             document.getElementById('mobile-account-link').href = 'my-ads.html';
         }
-
         fetchAds();
     </script>
 </body>
