@@ -77,7 +77,10 @@
                     </div>
                 </div>
                 <h2 id="modal-title" class="text-xl font-black text-gray-800 mb-2 leading-tight"></h2>
-                <p id="modal-price" class="text-2xl font-black text-blue-600 mb-6"></p>
+                <p id="modal-price" class="text-2xl font-black text-blue-600 mb-1"></p>
+                <div id="modal-seller-container" class="flex items-center gap-2 text-[10px] font-bold text-gray-400 mb-6">
+                    <span>👤</span> <span id="modal-seller-name">بائع روبابيكيا</span>
+                </div>
                 <div class="flex items-center gap-2 text-gray-500 text-sm mb-6 pb-6 border-b">
                     <span>📍</span><span id="modal-location"></span>
                 </div>
@@ -312,6 +315,9 @@
             document.getElementById('modal-price').innerText = ad.price + " ج.م";
             document.getElementById('modal-location').innerText = ad.location;
             document.getElementById('modal-desc').innerText = ad.description;
+
+            // Show Seller Name
+            document.getElementById('modal-seller-name').innerText = ad.seller_name || "بائع روبابيكيا";
 
             const callBtn = document.getElementById('call-btn');
             const whatsappBtn = document.getElementById('whatsapp-btn');

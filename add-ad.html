@@ -340,7 +340,8 @@
                     whatsapp: whatsapp || null,
                     allow_chat: allowChat,
                     location: document.getElementById('location').value,
-                    image_url: JSON.stringify(finalImages)
+                    image_url: JSON.stringify(finalImages),
+                    seller_name: user.name // حفظ اسم المستخدم المختار عند نشر الإعلان
                 };
                 let error;
                 if (editId) { error = (await supabase.from('ads').update(adData).eq('id', editId)).error; }
