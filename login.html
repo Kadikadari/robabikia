@@ -11,6 +11,7 @@
         .logo-gradient { background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); }
         .form-container { animation: fadeIn 0.4s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .hidden-form { display: none !important; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
@@ -25,12 +26,12 @@
     <main class="flex-1 flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-md rounded-3xl shadow-xl border border-gray-100 overflow-hidden form-container">
             <div class="flex border-b">
-                <button id="login-tab" class="flex-1 py-4 text-sm font-black transition-all border-b-2 border-blue-600 text-blue-600">تسجيل الدخول</button>
-                <button id="signup-tab" class="flex-1 py-4 text-sm font-black text-gray-400 border-b-2 border-transparent hover:text-gray-600 transition-all">إنشاء حساب جديد</button>
+                <button id="login-tab" onclick="toggleAuthTab('login')" class="flex-1 py-4 text-sm font-black transition-all border-b-2 border-blue-600 text-blue-600">تسجيل الدخول</button>
+                <button id="signup-tab" onclick="toggleAuthTab('signup')" class="flex-1 py-4 text-sm font-black text-gray-400 border-b-2 border-transparent hover:text-gray-600 transition-all">إنشاء حساب جديد</button>
             </div>
 
             <!-- Login Form -->
-            <div id="login-form-container" class="p-8" style="display: block;">
+            <div id="login-form-container" class="p-8">
                 <div class="text-center mb-8">
                     <h2 class="text-2xl font-black text-gray-800">حمداً لله على سلامتك!</h2>
                     <p class="text-xs text-gray-400 font-bold mt-1">سجل دخولك باسمك المختار وابدأ رحلتك</p>
@@ -53,7 +54,7 @@
             </div>
 
             <!-- Signup Form -->
-            <div id="signup-form-container" class="p-8" style="display: none;">
+            <div id="signup-form-container" class="p-8 hidden-form">
                 <div class="text-center mb-8">
                     <h2 class="text-2xl font-black text-gray-800">أهلاً بيك في عيلتنا!</h2>
                     <p class="text-xs text-gray-400 font-bold mt-1">اختر اللقب الذي سيظهر للناس (خصوصيتك تهمنا)</p>
@@ -80,29 +81,24 @@
 
     <footer class="p-6 text-center text-gray-400 text-[10px] font-bold">جميع الحقوق محفوظة © 2024 روبابيكيا</footer>
 
-    <script type="module">
-        import { auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from "./firebase-config.js";
+    <!-- سكريبت التبديل (عادي لضمان العمل الفوري) -->
+    <script>
+        function toggleAuthTab(type) {
+            const loginForm = document.getElementById('login-form-container');
+            const signupForm = document.getElementById('signup-form-container');
+            const loginTab = document.getElementById('login-tab');
+            const signupTab = document.getElementById('signup-tab');
 
-        // اختيار العناصر
-        const loginTab = document.getElementById('login-tab');
-        const signupTab = document.getElementById('signup-tab');
-        const loginForm = document.getElementById('login-form-container');
-        const signupForm = document.getElementById('signup-form-container');
-
-        // وظيفة التبديل المباشرة
-        function showTab(type) {
             if (type === 'login') {
-                loginForm.style.display = 'block';
-                signupForm.style.display = 'none';
-
+                loginForm.classList.remove('hidden-form');
+                signupForm.classList.add('hidden-form');
                 loginTab.classList.add('border-blue-600', 'text-blue-600');
                 loginTab.classList.remove('text-gray-400', 'border-transparent');
                 signupTab.classList.remove('border-blue-600', 'text-blue-600');
                 signupTab.classList.add('text-gray-400', 'border-transparent');
             } else {
-                loginForm.style.display = 'none';
-                signupForm.style.display = 'block';
-
+                loginForm.classList.add('hidden-form');
+                signupForm.classList.remove('hidden-form');
                 signupTab.classList.add('border-blue-600', 'text-blue-600');
                 signupTab.classList.remove('text-gray-400', 'border-transparent');
                 loginTab.classList.remove('border-blue-600', 'text-blue-600');
@@ -110,70 +106,50 @@
             }
         }
 
-        // ربط الأحداث داخل الموديول
-        loginTab.onclick = () => showTab('login');
-        signupTab.onclick = () => showTab('signup');
+        // تفقد الرابط إذا كان يطلب فتح التسجيل مباشرة
+        if (new URLSearchParams(window.location.search).get('tab') === 'signup') {
+            toggleAuthTab('signup');
+        }
+    </script>
 
-        // التحقق من وجود پارامتر في الرابط لفتح تبويب معين (اختياري)
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('tab') === 'signup') showTab('signup');
+    <!-- سكريبت البيانات (موديول) -->
+    <script type="module">
+        import { auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from "./firebase-config.js";
 
-        // تسجيل الدخول
-        document.getElementById('actual-login-form').onsubmit = async (e) => {
+        document.getElementById('actual-login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('login-email').value;
             const password = document.getElementById('login-password').value;
             const errorEl = document.getElementById('login-error');
-            const btn = e.target.querySelector('button');
-
-            btn.disabled = true;
-            btn.innerText = "جاري الدخول...";
-
             try {
                 const userCredential = await signInWithEmailAndPassword(auth, email, password);
-                const user = userCredential.user;
                 localStorage.setItem('user', JSON.stringify({
-                    name: user.displayName || "عضو روبابيكيا",
+                    name: userCredential.user.displayName || "عضو روبابيكيا",
                     email: email.toLowerCase()
                 }));
                 window.location.href = 'index.html';
             } catch (error) {
                 errorEl.innerText = "خطأ في تسجيل الدخول: تأكد من البيانات";
                 errorEl.classList.remove('hidden');
-                btn.disabled = false;
-                btn.innerText = "دخول";
             }
-        };
+        });
 
-        // إنشاء الحساب
-        document.getElementById('actual-signup-form').onsubmit = async (e) => {
+        document.getElementById('actual-signup-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const nickname = document.getElementById('signup-name').value;
             const email = document.getElementById('signup-email').value;
             const password = document.getElementById('signup-password').value;
             const errorEl = document.getElementById('signup-error');
-            const btn = e.target.querySelector('button');
-
-            btn.disabled = true;
-            btn.innerText = "جاري إنشاء الحساب...";
-
             try {
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 await updateProfile(userCredential.user, { displayName: nickname });
-                localStorage.setItem('user', JSON.stringify({
-                    name: nickname,
-                    email: email.toLowerCase()
-                }));
+                localStorage.setItem('user', JSON.stringify({ name: nickname, email: email.toLowerCase() }));
                 window.location.href = 'index.html';
             } catch (error) {
-                let msg = "خطأ في إنشاء الحساب";
-                if (error.code === 'auth/email-already-in-use') msg = "البريد مستخدم بالفعل";
-                errorEl.innerText = msg;
+                errorEl.innerText = "خطأ في إنشاء الحساب: " + error.message;
                 errorEl.classList.remove('hidden');
-                btn.disabled = false;
-                btn.innerText = "إنشاء حساب باللقب";
             }
-        };
+        });
     </script>
 </body>
 </html>
