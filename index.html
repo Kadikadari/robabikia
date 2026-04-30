@@ -118,7 +118,8 @@
                 <input type="text" id="search-input" placeholder="بتدور على إيه؟" class="w-full bg-gray-100 rounded-xl py-2 md:py-2.5 px-8 md:px-10 outline-none focus:ring-2 focus:ring-blue-500 text-[11px] md:text-sm border-none text-right">
                 <div class="absolute right-2 md:right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs md:text-sm">🔍</div>
             </div>
-            <div id="auth-section" class="flex items-center gap-2 shrink-0">
+            <div id="auth-section" class="hidden md:flex items-center gap-3 shrink-0">
+                <!-- هذا الجزء يظهر فقط في الكمبيوتر للحفاظ على نظافة التصميم في الموبايل -->
                 <a href="login.html" class="text-xs font-black text-gray-500 hover:text-blue-600 px-3 transition-colors">دخول / تسجيل</a>
                 <a href="login.html" class="bg-blue-600 text-white px-5 py-2.5 rounded-xl font-black text-xs shadow-md">+ بيع دلوقتي</a>
             </div>
@@ -176,7 +177,7 @@
 
         let user = JSON.parse(localStorage.getItem('user'));
 
-        // تنظيف وحماية الخصوصية
+        // نظام حماية الخصوصية: تنظيف اسم المستخدم فوراً
         if (user && user.name) {
             const emailPart = user.email.split('@')[0];
             if (user.name.includes('@') || user.name === emailPart) {
@@ -186,7 +187,6 @@
         }
 
         document.getElementById('current-city-name').innerText = selectedLocation;
-
         const mockAds = generateMockAds(200);
 
         async function fetchAds() {
@@ -195,9 +195,7 @@
             if (activeCategory !== 'all') qB = qB.eq('main_category', activeCategory);
             if (activeSubCategory !== 'الكل') qB = qB.eq('sub_category', activeSubCategory);
             if (searchTerm) qB = qB.ilike('title', `%${searchTerm}%`);
-
             const { data, error } = await qB.order('created_at', { ascending: false }).limit(20);
-
             let realAds = data || [];
             let filteredMock = mockAds.filter(ad => {
                 if (selectedLocation !== 'كل مصر' && ad.location !== selectedLocation) return false;
@@ -206,7 +204,6 @@
                 if (searchTerm && !ad.title.toLowerCase().includes(searchTerm.toLowerCase())) return false;
                 return true;
             });
-
             adsCache = [...realAds, ...filteredMock].slice(0, 20);
             renderAds(adsCache);
             checkDirectLink();
@@ -257,7 +254,6 @@
             }).join('');
         }
 
-        // SEO Helper Functions
         function updateSEO(title, description, imageUrl = null) {
             document.title = title + " | روبابيكيا";
             const metaDesc = document.querySelector('meta[name="description"]');
@@ -270,192 +266,81 @@
             }
         }
 
-        function injectStructuredData(ad) {
-            let script = document.getElementById('structured-data');
-            if (!script) {
-                script = document.createElement('script');
-                script.id = 'structured-data';
-                script.type = 'application/ld+json';
-                document.head.appendChild(script);
-            }
-            const json = {
-                "@context": "https://schema.org",
-                "@type": "Product",
-                "name": ad.title,
-                "image": getSafeImageUrl(ad.image_url),
-                "description": ad.description,
-                "offers": {
-                    "@type": "Offer",
-                    "price": ad.price,
-                    "priceCurrency": "EGP",
-                    "availability": "https://schema.org/InStock"
-                }
-            };
-            script.text = JSON.stringify(json);
-        }
-
         window.openProductModal = function(id) {
             const ad = adsCache.find(a => a.id == id);
             if (!ad) return;
-
-            updateSEO(ad.title, `اشتري ${ad.title} في ${ad.location} بسعر ${ad.price} ج.م. تصفح أفضل العروض على روبابيكيا مصر.`, getSafeImageUrl(ad.image_url));
-            injectStructuredData(ad);
-
+            updateSEO(ad.title, `اشتري ${ad.title} في ${ad.location} بسعر ${ad.price} ج.م.`, getSafeImageUrl(ad.image_url));
             const isMock = id.toString().startsWith('mock-');
             const increment = isMock ? 1 : 100;
-
             ad.views = (parseInt(ad.views) || 0) + increment;
             document.getElementById('modal-views').innerHTML = `👁️ ${ad.views} <span class="text-[8px] font-normal text-gray-400 mr-1">عدد مشاهدات الاعلان</span>`;
-
-            if (!isMock) {
-                supabase.from('ads').update({ views: ad.views }).eq('id', id).then();
-            }
-
+            if (!isMock) supabase.from('ads').update({ views: ad.views }).eq('id', id).then();
             currentAdImages = [];
             try { currentAdImages = JSON.parse(ad.image_url); } catch(e) { currentAdImages = [ad.image_url]; }
             showImage(0);
-
             document.getElementById('modal-title').innerText = ad.title;
             document.getElementById('modal-price').innerText = ad.price + " ج.م";
             document.getElementById('modal-location').innerText = ad.location;
             document.getElementById('modal-desc').innerText = ad.description;
+            document.getElementById('modal-seller-name').innerText = ad.seller_name || "بائع روبابيكيا";
+            document.getElementById('product-modal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
 
-            const sellerName = ad.seller_name || "بائع روبابيكيا";
-            document.getElementById('modal-seller-name').innerText = sellerName;
-
-            const callBtn = document.getElementById('call-btn');
-            const whatsappBtn = document.getElementById('whatsapp-btn');
-            const chatBtn = document.getElementById('chat-btn');
-            const secondaryBtns = document.getElementById('secondary-btns');
-
-            if (ad.phone) {
-                callBtn.classList.remove('hidden');
-                callBtn.onclick = () => window.location.href = `tel:${ad.phone}`;
-            } else { callBtn.classList.add('hidden'); }
-
-            if (ad.whatsapp) {
-                whatsappBtn.classList.remove('hidden');
-                whatsappBtn.onclick = () => window.open(`https://wa.me/2${ad.whatsapp}`, '_blank');
-            } else { whatsappBtn.classList.add('hidden'); }
-
+            const callBtn = document.getElementById('call-btn'), whatsappBtn = document.getElementById('whatsapp-btn'), chatBtn = document.getElementById('chat-btn'), secondaryBtns = document.getElementById('secondary-btns');
+            if (ad.phone) { callBtn.classList.remove('hidden'); callBtn.onclick = () => window.location.href = `tel:${ad.phone}`; } else { callBtn.classList.add('hidden'); }
+            if (ad.whatsapp) { whatsappBtn.classList.remove('hidden'); whatsappBtn.onclick = () => window.open(`https://wa.me/2${ad.whatsapp}`, '_blank'); } else { whatsappBtn.classList.add('hidden'); }
             if (ad.allow_chat !== false) {
                 chatBtn.classList.remove('hidden');
-                chatBtn.onclick = () => {
-                    if (!user) { window.location.href = 'login.html'; return; }
-                    window.location.href = `messages.html?seller=${ad.seller_email.toLowerCase()}&adId=${ad.id}&ad=${encodeURIComponent(ad.title)}&img=${encodeURIComponent(getSafeImageUrl(ad.image_url))}&price=${ad.price}`;
-                };
+                chatBtn.onclick = () => { if (!user) { window.location.href = 'login.html'; return; } window.location.href = `messages.html?seller=${ad.seller_email.toLowerCase()}&adId=${ad.id}&ad=${encodeURIComponent(ad.title)}&img=${encodeURIComponent(getSafeImageUrl(ad.image_url))}&price=${ad.price}`; };
             } else { chatBtn.classList.add('hidden'); }
-
-            if (whatsappBtn.classList.contains('hidden') && chatBtn.classList.contains('hidden')) {
-                secondaryBtns.classList.add('hidden');
-            } else {
-                secondaryBtns.classList.remove('hidden');
-                if (whatsappBtn.classList.contains('hidden') || chatBtn.classList.contains('hidden')) {
-                    secondaryBtns.classList.replace('grid-cols-2', 'grid-cols-1');
-                } else {
-                    secondaryBtns.classList.replace('grid-cols-1', 'grid-cols-2');
-                }
-            }
+            if (whatsappBtn.classList.contains('hidden') && chatBtn.classList.contains('hidden')) { secondaryBtns.classList.add('hidden'); }
+            else { secondaryBtns.classList.remove('hidden'); if (whatsappBtn.classList.contains('hidden') || chatBtn.classList.contains('hidden')) { secondaryBtns.classList.replace('grid-cols-2', 'grid-cols-1'); } else { secondaryBtns.classList.replace('grid-cols-1', 'grid-cols-2'); } }
 
             document.getElementById('share-whatsapp-btn').onclick = () => {
                 const url = `${window.location.origin}${window.location.pathname}?ad=${ad.id}`;
                 const txt = `شوف الإعلان ده على روبابيكيا:\n*${ad.title}*\nالسعر: ${ad.price} ج.م\n📍 ${ad.location}\n\nالرابط:\n${url}`;
                 window.open(`https://wa.me/?text=${encodeURIComponent(txt)}`, '_blank');
             };
-
-            document.getElementById('product-modal').style.display = 'flex';
-            document.body.style.overflow = 'hidden';
         };
 
-        window.closeProductModal = () => {
-            document.getElementById('product-modal').style.display = 'none';
-            document.body.style.overflow = 'auto';
-            updateSEO("روبابيكيا - بيع واشتري أي حاجة في مصر", "سوقك الموثوق لبيع وشراء كل شيء في مصر. سيارات، عقارات، إلكترونيات.");
-        };
-
-        window.showImage = (idx) => {
-            currentImgIndex = idx;
-            document.getElementById('modal-main-img').src = currentAdImages[idx];
-            document.getElementById('photo-index').innerText = idx + 1;
-            document.getElementById('photo-total').innerText = currentAdImages.length;
-        };
+        window.closeProductModal = () => { document.getElementById('product-modal').style.display = 'none'; document.body.style.overflow = 'auto'; updateSEO("روبابيكيا - بيع واشتري أي حاجة في مصر", "سوقك الموثوق."); };
+        window.showImage = (idx) => { currentImgIndex = idx; document.getElementById('modal-main-img').src = currentAdImages[idx]; document.getElementById('photo-index').innerText = idx + 1; document.getElementById('photo-total').innerText = currentAdImages.length; };
         window.nextImg = () => showImage((currentImgIndex + 1) % currentAdImages.length);
         window.prevImg = () => showImage((currentImgIndex - 1 + currentAdImages.length) % currentAdImages.length);
 
-        function getSafeImageUrl(url) {
-            if (!url) return "https://via.placeholder.com/400";
-            try { const p = JSON.parse(url); return Array.isArray(p) ? p[0] : url; } catch(e) { return url; }
-        }
+        function getSafeImageUrl(url) { if (!url) return "https://via.placeholder.com/400"; try { const p = JSON.parse(url); return Array.isArray(p) ? p[0] : url; } catch(e) { return url; } }
 
-        const egyptLocations = ["القاهرة - مدينة نصر", "القاهرة - التجمع الخامس", "القاهرة - مصر الجديدة", "القاهرة - المعادي", "القاهرة - الرحاب", "القاهرة - مدينتي", "القاهرة - الشروق", "القاهرة - العبور", "القاهرة - وسط البلد", "القاهرة - شبرا", "القاهرة - حلوان", "القاهرة - المقطم", "القاهرة - الزمالك", "القاهرة - عين شمس", "القاهرة - المطرية", "القاهرة - المرج", "القاهرة - السيدة زينب", "الجيزة - 6 أكتوبر", "الجيزة - الشيخ زايد", "الجيزة - الهرم", "الجيزة - فيصل", "الجيزة - المهندسين", "الجيزة - الدقي", "الجيزة - حدائق الأهرام", "الجيزة - العمرانية", "الجيزة - الوراق", "الجيزة - إمبابة", "الجيزة - بولاق الدكرور", "الجيزة - الحوامدية", "الجيزة - البدرشين", "الإسكندرية - سموحة", "الإسكندرية - ميامي", "الإسكندرية - سيدي بشر", "الإسكندرية - العجمي", "الإسكندرية - لوران", "الإسكندرية - جليم", "الإسكندرية - المعمورة", "الإسكندرية - محرم بك", "الإسكندرية - المنشية", "الإسكندرية - كينج مريوط", "الإسكندرية - العامرية"];
-
-        window.toggleLocationModal = () => {
-            const m = document.getElementById('location-modal');
-            m.classList.toggle('hidden'); m.classList.toggle('flex');
-            if (!m.classList.contains('hidden')) renderLocationsUI(egyptLocations);
-        };
-        function renderLocationsUI(list) {
-            document.getElementById('location-list').innerHTML = `<div onclick="selectLocation('كل مصر')" class="p-3 hover:bg-blue-50 rounded-xl cursor-pointer font-black text-sm text-blue-600 border-b border-gray-50">📍 كل مصر</div>` +
-                list.map(l => `<div onclick="selectLocation('${l}')" class="p-3 hover:bg-blue-50 rounded-xl cursor-pointer font-bold text-sm border-b border-gray-50 last:border-0">📍 ${l}</div>`).join('');
-        }
+        const egyptLocations = ["القاهرة - مدينة نصر", "الجيزة - 6 أكتوبر", "الإسكندرية - سموحة", "القاهرة - التجمع الخامس", "الجيزة - الشيخ زايد", "بور سعيد"];
+        window.toggleLocationModal = () => { const m = document.getElementById('location-modal'); m.classList.toggle('hidden'); m.classList.toggle('flex'); if (!m.classList.contains('hidden')) renderLocationsUI(egyptLocations); };
+        function renderLocationsUI(list) { document.getElementById('location-list').innerHTML = `<div onclick="selectLocation('كل مصر')" class="p-3 hover:bg-blue-50 rounded-xl cursor-pointer font-black text-sm text-blue-600 border-b border-gray-50">📍 كل مصر</div>` + list.map(l => `<div onclick="selectLocation('${l}')" class="p-3 hover:bg-blue-50 rounded-xl cursor-pointer font-bold text-sm border-b border-gray-50 last:border-0">📍 ${l}</div>`).join(''); }
         window.filterLocationsUI = () => renderLocationsUI(egyptLocations.filter(l => l.toLowerCase().includes(document.getElementById('location-search-input').value.toLowerCase())));
-        window.selectLocation = (l) => {
-            selectedLocation = l;
-            localStorage.setItem('userLocation', l);
-            document.getElementById('current-city-name').innerText = l;
-            toggleLocationModal();
-            updateSEO(`إعلانات في ${l}`, `تصفح آلاف الإعلانات والمنتجات المعروضة للبيع في ${l}. سيارات، عقارات، إلكترونيات والمزيد.`);
-            fetchAds();
-        };
+        window.selectLocation = (l) => { selectedLocation = l; localStorage.setItem('userLocation', l); document.getElementById('current-city-name').innerText = l; toggleLocationModal(); fetchAds(); };
 
-        document.getElementById('search-input').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                searchTerm = e.target.value;
-                updateSEO(`بحث عن: ${searchTerm}`, `نتائج البحث عن ${searchTerm} في روبابيكيا مصر.`);
-                fetchAds();
-            }
-        });
+        document.getElementById('search-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') { searchTerm = e.target.value; fetchAds(); } });
 
-        const cats = {
-            cars: ['سيارات للبيع', 'سيارات للإيجار', 'موتوسيكلات', 'قطع غيار', 'إكسسوارات', 'كاوتش وبطاريات', 'أتوبيسات وشاحنات'],
-            real: ['شقق للبيع', 'شقق للإيجار', 'عقارات تجارية', 'شاليهات ومصايف', 'أراضي', 'فلل للبيع'],
-            elec: ['موبايلات', 'تابلت', 'حواسيب ولابتوب', 'ألعاب فيديو', 'تلفزيونات', 'كاميرات', 'سماعات'],
-            elec_appliances: ['ثلاجات', 'غسالات', 'بوتاجازات', 'تكييفات', 'سخانات', 'أجهزة مطبخ', 'مكاوى'],
-            fashion: ['ملابس رجالي', 'ملابس حريمي', 'ملابس أطفال', 'ساعات', 'أحذية', 'حقائب', 'إكسسوارات'],
-            home: ['غرف نوم', 'غرف معيشة', 'مطبخ وأدواته', 'ديكور ومنزل', 'أثاث خارجي', 'مراتب وسجاد'],
-            services: ['صيانة منزلية', 'نقل عفش', 'دروس خصوصية', 'تنظيف', 'خدمات طبية', 'تصليح إلكترونيات'],
-            jobs: ['مبيعات', 'وظائف إدارية', 'محاسبة', 'سائقين', 'حرفيين', 'تقنية معلومات', 'هندسة'],
-            animals: ['كلاب', 'قطط', 'عصافير وببغاوات', 'خيول', 'أسماك زينة', 'مستلزمات حيوانات']
-        };
+        const cats = { cars: ['سيارات للبيع'], real: ['شقق للبيع'], elec: ['موبايلات'] };
         window.toggleSub = (cat, btn, label) => {
             const bar = document.getElementById('sub-menu-bar'), content = document.getElementById('sub-content');
             document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
             if (activeCategory === cat) { activeCategory = 'all'; bar.classList.remove('active'); fetchAds(); return; }
             activeCategory = cat; btn.classList.add('active'); bar.classList.add('active');
-            content.innerHTML = `<button onclick="filterBySub('${cat}', 'الكل')" class="bg-white border border-blue-200 text-blue-600 px-4 py-2 rounded-full text-xs font-bold shadow-sm">كل ${label}</button>` +
-                cats[cat].map(s => `<button onclick="filterBySub('${cat}', '${s}')" class="bg-white border border-gray-100 text-gray-600 px-4 py-2 rounded-full text-xs font-bold shadow-sm">${s}</button>`).join('');
-            updateSEO(label, `تصفح قسم ${label} في روبابيكيا. أفضل العروض والأسعار في مصر.`);
+            content.innerHTML = `<button onclick="filterBySub('${cat}', 'الكل')" class="bg-white border border-blue-200 text-blue-600 px-4 py-2 rounded-full text-xs font-bold shadow-sm">كل ${label}</button>` + (cats[cat] || []).map(s => `<button onclick="filterBySub('${cat}', '${s}')" class="bg-white border border-gray-100 text-gray-600 px-4 py-2 rounded-full text-xs font-bold shadow-sm">${s}</button>`).join('');
             fetchAds();
         };
-        window.filterBySub = (cat, sub) => {
-            activeSubCategory = sub;
-            updateSEO(sub, `تصفح ${sub} في روبابيكيا. آلاف الإعلانات المتجددة يومياً.`);
-            fetchAds();
-        };
+        window.filterBySub = (cat, sub) => { activeSubCategory = sub; fetchAds(); };
 
-        window.logout = () => {
-            localStorage.removeItem('user');
-            window.location.reload();
-        };
+        window.logout = () => { localStorage.removeItem('user'); window.location.reload(); };
 
         if (user) {
+            // إعادة بناء قسم الحساب بشكل نظيف يحافظ على التصميم المتجاوب
             document.getElementById('auth-section').innerHTML = `
-                <div class="flex items-center gap-2 ml-4">
-                    <span class="text-[10px] font-black text-gray-400">أهلاً، <span class="text-blue-600">${user.name}</span></span>
-                    <button onclick="logout()" class="text-[9px] font-bold text-red-500 hover:underline">خروج</button>
+                <div class="flex items-center gap-3">
+                    <div class="flex flex-col items-end">
+                        <span class="text-[10px] font-black text-gray-700">أهلاً، ${user.name}</span>
+                        <button onclick="logout()" class="text-[9px] font-bold text-red-500 hover:underline">خروج</button>
+                    </div>
+                    <a href="my-ads.html" class="text-xs font-black text-gray-500 hover:text-blue-600 px-2 transition-colors border-r pr-2">إعلاناتي</a>
                 </div>
-                <a href="my-ads.html" class="text-xs font-black text-gray-500 hover:text-blue-600 px-3 transition-colors">إعلاناتي</a>
-                <a href="add-ad.html" class="bg-blue-600 text-white px-5 py-2.5 rounded-xl font-black text-xs shadow-md">+ بيع دلوقتي</a>
             `;
             document.getElementById('mobile-account-link').href = 'my-ads.html';
             listenToUnreadMessages();
