@@ -119,7 +119,6 @@
                 <div class="absolute right-2 md:right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs md:text-sm">🔍</div>
             </div>
             <div id="auth-section" class="hidden md:flex items-center gap-3 shrink-0">
-                <!-- هذا الجزء يظهر فقط في الكمبيوتر للحفاظ على نظافة التصميم في الموبايل -->
                 <a href="login.html" class="text-xs font-black text-gray-500 hover:text-blue-600 px-3 transition-colors">دخول / تسجيل</a>
                 <a href="login.html" class="bg-blue-600 text-white px-5 py-2.5 rounded-xl font-black text-xs shadow-md">+ بيع دلوقتي</a>
             </div>
@@ -177,7 +176,6 @@
 
         let user = JSON.parse(localStorage.getItem('user'));
 
-        // نظام حماية الخصوصية: تنظيف اسم المستخدم فوراً
         if (user && user.name) {
             const emailPart = user.email.split('@')[0];
             if (user.name.includes('@') || user.name === emailPart) {
@@ -276,7 +274,7 @@
             document.getElementById('modal-views').innerHTML = `👁️ ${ad.views} <span class="text-[8px] font-normal text-gray-400 mr-1">عدد مشاهدات الاعلان</span>`;
             if (!isMock) supabase.from('ads').update({ views: ad.views }).eq('id', id).then();
             currentAdImages = [];
-            try { currentAdImages = JSON.parse(ad.image_url); } catch(e) { currentAdImages = [ad.image_url]; }
+            try { currentAdImages = JSON.parse(ad.image_url); if(!Array.isArray(currentAdImages)) currentAdImages=[ad.image_url]; } catch(e) { currentAdImages = [ad.image_url]; }
             showImage(0);
             document.getElementById('modal-title').innerText = ad.title;
             document.getElementById('modal-price').innerText = ad.price + " ج.م";
@@ -285,7 +283,6 @@
             document.getElementById('modal-seller-name').innerText = ad.seller_name || "بائع روبابيكيا";
             document.getElementById('product-modal').style.display = 'flex';
             document.body.style.overflow = 'hidden';
-
             const callBtn = document.getElementById('call-btn'), whatsappBtn = document.getElementById('whatsapp-btn'), chatBtn = document.getElementById('chat-btn'), secondaryBtns = document.getElementById('secondary-btns');
             if (ad.phone) { callBtn.classList.remove('hidden'); callBtn.onclick = () => window.location.href = `tel:${ad.phone}`; } else { callBtn.classList.add('hidden'); }
             if (ad.whatsapp) { whatsappBtn.classList.remove('hidden'); whatsappBtn.onclick = () => window.open(`https://wa.me/2${ad.whatsapp}`, '_blank'); } else { whatsappBtn.classList.add('hidden'); }
@@ -295,7 +292,6 @@
             } else { chatBtn.classList.add('hidden'); }
             if (whatsappBtn.classList.contains('hidden') && chatBtn.classList.contains('hidden')) { secondaryBtns.classList.add('hidden'); }
             else { secondaryBtns.classList.remove('hidden'); if (whatsappBtn.classList.contains('hidden') || chatBtn.classList.contains('hidden')) { secondaryBtns.classList.replace('grid-cols-2', 'grid-cols-1'); } else { secondaryBtns.classList.replace('grid-cols-1', 'grid-cols-2'); } }
-
             document.getElementById('share-whatsapp-btn').onclick = () => {
                 const url = `${window.location.origin}${window.location.pathname}?ad=${ad.id}`;
                 const txt = `شوف الإعلان ده على روبابيكيا:\n*${ad.title}*\nالسعر: ${ad.price} ج.م\n📍 ${ad.location}\n\nالرابط:\n${url}`;
@@ -304,45 +300,77 @@
         };
 
         window.closeProductModal = () => { document.getElementById('product-modal').style.display = 'none'; document.body.style.overflow = 'auto'; updateSEO("روبابيكيا - بيع واشتري أي حاجة في مصر", "سوقك الموثوق."); };
-        window.showImage = (idx) => { currentImgIndex = idx; document.getElementById('modal-main-img').src = currentAdImages[idx]; document.getElementById('photo-index').innerText = idx + 1; document.getElementById('photo-total').innerText = currentAdImages.length; };
+        window.showImage = (idx) => { if(!currentAdImages[idx]) return; currentImgIndex = idx; document.getElementById('modal-main-img').src = currentAdImages[idx]; document.getElementById('photo-index').innerText = idx + 1; document.getElementById('photo-total').innerText = currentAdImages.length; };
         window.nextImg = () => showImage((currentImgIndex + 1) % currentAdImages.length);
         window.prevImg = () => showImage((currentImgIndex - 1 + currentAdImages.length) % currentAdImages.length);
 
         function getSafeImageUrl(url) { if (!url) return "https://via.placeholder.com/400"; try { const p = JSON.parse(url); return Array.isArray(p) ? p[0] : url; } catch(e) { return url; } }
 
-        const egyptLocations = ["القاهرة - مدينة نصر", "الجيزة - 6 أكتوبر", "الإسكندرية - سموحة", "القاهرة - التجمع الخامس", "الجيزة - الشيخ زايد", "بور سعيد"];
+        const egyptLocations = [
+            "القاهرة - مدينة نصر", "القاهرة - التجمع الخامس", "القاهرة - مصر الجديدة", "القاهرة - المعادي", "القاهرة - الرحاب", "القاهرة - مدينتي", "القاهرة - الشروق", "القاهرة - العبور", "القاهرة - وسط البلد", "القاهرة - شبرا", "القاهرة - حلوان", "القاهرة - المقطم", "القاهرة - الزمالك", "القاهرة - عين شمس", "القاهرة - المطرية", "القاهرة - المرج", "القاهرة - السيدة زينب",
+            "الجيزة - 6 أكتوبر", "الجيزة - الشيخ زايد", "الجيزة - الهرم", "الجيزة - فيصل", "الجيزة - المهندسين", "الجيزة - الدقي", "الجيزة - حدائق الأهرام", "الجيزة - العمرانية", "الجيزة - الوراق", "الجيزة - إمبابة", "الجيزة - بولاق الدكرور", "الجيزة - الحوامدية", "الجيزة - البدرشين",
+            "الإسكندرية - سموحة", "الإسكندرية - ميامي", "الإسكندرية - سيدي بشر", "الإسكندرية - العجمي", "الإسكندرية - لوران", "الإسكندرية - جليم", "الإسكندرية - المعمورة", "الإسكندرية - محرم بك", "الإسكندرية - المنشية", "الإسكندرية - كينج مريوط", "الإسكندرية - العامرية",
+            "القليوبية - بنها", "القليوبية - شبرا الخيمة", "القليوبية - القناطر الخيرية", "القليوبية - الخانكة", "القليوبية - قليوب", "القليوبية - طوخ", "القليوبية - قها",
+            "الشرقية - الزقازيق", "الشرقية - العاشر من رمضان", "الشرقية - بلبيس", "الشرقية - فاقوس", "الشرقية - منيا القمح", "الشرقية - أبو حماد", "الشرقية - ديرب نجم",
+            "الدقهلية - المنصورة", "الدقهلية - طلخا", "الدقهلية - ميت غمر", "الدقهلية - السنبلاوين", "الدقهلية - شربين", "الدقهلية - دكرنس", "الدقهلية - بلقاس",
+            "الغربية - طنطا", "الغربية - المحلة الكبرى", "الغربية - كفر الزيات", "الغربية - زفتى", "الغربية - بسيون", "الغربية - قطور", "الغربية - السنطة",
+            "المنوفية - شبين الكوم", "المنوفية - قويسنا", "المنوفية - أشمون", "المنوفية - منوف", "المنوفية - السادات", "المنوفية - الباجور", "المنوفية - بركة السبع",
+            "البحيرة - دمنهور", "البحيرة - كفر الدوار", "البحيرة - إيتاي البارود", "البحيرة - رشيد", "البحيرة - كوم حمادة", "البحيرة - أبو حمص", "البحيرة - حوش عيسى",
+            "كفر الشيخ - كفر الشيخ", "كفر الشيخ - دسوق", "كفر الشيخ - مطوبس", "كفر الشيخ - قلين", "كفر الشيخ - سيدي سالم", "كفر الشيخ - بلطيم",
+            "دمياط - دمياط", "دمياط - دمياط الجديدة", "دمياط - رأس البر", "دمياط - فارسكور", "دمياط - الزرقا",
+            "بور سعيد - حي الشرق", "بور سعيد - حي العرب", "بور سعيد - بور فؤاد", "بور سعيد - حي الزهور",
+            "الإسماعيلية - الإسماعيلية", "الإسماعيلية - فايد", "الإسماعيلية - القنطرة شرق", "الإسماعيلية - القنطرة غرب", "الإسماعيلية - التل الكبير",
+            "السويس - حي السويس", "السويس - حي الأربعين", "السويس - حي فيصل", "السويس - العين السخنة",
+            "الفيوم - الفيوم", "الفيوم - أبشواي", "الفيوم - إطسا", "الفيوم - سنورس", "الفيوم - طامية",
+            "بني سويف - بني سويف", "بني سويف - الواسطى", "بني سويف - ببا", "بني سويف - الفشن", "بني سويف - ناصر",
+            "المنيا - المنيا", "المنيا - مغاغة", "المنيا - ملوى", "المنيا - بني مزار", "المنيا - سمالوط", "المنيا - أبو قرقاص",
+            "أسيوط - أسيوط", "أسيوط - ديروط", "أسيوط - منفلوط", "أسيوط - القوصية", "أسيوط - أبو تيج", "أسيوط - صدفا",
+            "سوهاج - سوهاج", "سوهاج - طما", "سوهاج - جرجا", "سوهاج - أخميم", "سوهاج - المنشاة", "سوهاج - طهطا",
+            "قنا - قنا", "قنا - نجع حمادي", "قنا - دشنا", "قنا - قوص", "قنا - قفط", "قنا - أبو تشت",
+            "الأقصر - مدينة الأقصر", "الأقصر - إسنا", "الأقصر - أرمنت", "الأقصر - القرنة", "الأقصر - طيبة",
+            "أسوان - مدينة أسوان", "أسوان - كوم أمبو", "أسوان - إدفو", "أسوان - دراو", "أسوان - نصر النوبة",
+            "البحر الأحمر - الغردقة", "البحر الأحمر - الجونة", "البحر الأحمر - سفاجا", "البحر الأحمر - مرسى علم", "البحر الأحمر - القصير",
+            "مطروح - مرسى مطروح", "مطروح - الساحل الشمالي", "مطروح - سيوة", "مطروح - الضبعة", "مطروح - العلمين",
+            "الوادي الجديد - الخارجة", "الوادي الجديد - الداخلة", "الوادي الجديد - الفرافرة",
+            "شمال سيناء - العريش", "شمال سيناء - بئر العبد", "شمال سيناء - الشيخ زويد",
+            "جنوب سيناء - شرم الشيخ", "جنوب سيناء - دهب", "جنوب سيناء - طور سيناء", "جنوب سيناء - نويبع", "جنوب سيناء - رأس سدر"
+        ];
+
         window.toggleLocationModal = () => { const m = document.getElementById('location-modal'); m.classList.toggle('hidden'); m.classList.toggle('flex'); if (!m.classList.contains('hidden')) renderLocationsUI(egyptLocations); };
         function renderLocationsUI(list) { document.getElementById('location-list').innerHTML = `<div onclick="selectLocation('كل مصر')" class="p-3 hover:bg-blue-50 rounded-xl cursor-pointer font-black text-sm text-blue-600 border-b border-gray-50">📍 كل مصر</div>` + list.map(l => `<div onclick="selectLocation('${l}')" class="p-3 hover:bg-blue-50 rounded-xl cursor-pointer font-bold text-sm border-b border-gray-50 last:border-0">📍 ${l}</div>`).join(''); }
         window.filterLocationsUI = () => renderLocationsUI(egyptLocations.filter(l => l.toLowerCase().includes(document.getElementById('location-search-input').value.toLowerCase())));
         window.selectLocation = (l) => { selectedLocation = l; localStorage.setItem('userLocation', l); document.getElementById('current-city-name').innerText = l; toggleLocationModal(); fetchAds(); };
-
         document.getElementById('search-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') { searchTerm = e.target.value; fetchAds(); } });
 
-        const cats = { cars: ['سيارات للبيع'], real: ['شقق للبيع'], elec: ['موبايلات'] };
+        const cats = {
+            cars: ['سيارات للبيع', 'سيارات للإيجار', 'موتوسيكلات', 'قطع غيار', 'إكسسوارات', 'كاوتش وبطاريات', 'أتوبيسات وشاحنات'],
+            real: ['شقق للبيع', 'شقق للإيجار', 'عقارات تجارية', 'شاليهات ومصايف', 'أراضي', 'فلل للبيع'],
+            elec: ['موبايلات', 'تابلت', 'حواسيب ولابتوب', 'ألعاب فيديو', 'تلفزيونات', 'كاميرات', 'سماعات'],
+            elec_appliances: ['ثلاجات', 'غسالات', 'بوتاجازات', 'تكييفات', 'سخانات', 'أجهزة مطبخ', 'مكاوى'],
+            fashion: ['ملابس رجالي', 'ملابس حريمي', 'ملابس أطفال', 'ساعات', 'أحذية', 'حقائب', 'إكسسوارات'],
+            home: ['غرف نوم', 'غرف معيشة', 'مطبخ وأدواته', 'ديكور ومنزل', 'أثاث خارجي', 'مراتب وسجاد'],
+            services: ['صيانة منزلية', 'نقل عفش', 'دروس خصوصية', 'تنظيف', 'خدمات طبية', 'تصليح إلكترونيات'],
+            jobs: ['مبيعات', 'وظائف إدارية', 'محاسبة', 'سائقين', 'حرفيين', 'تقنية معلومات', 'هندسة'],
+            animals: ['كلاب', 'قطط', 'عصافير وببغاوات', 'خيول', 'أسماك زينة', 'مستلزمات حيوانات']
+        };
+
         window.toggleSub = (cat, btn, label) => {
             const bar = document.getElementById('sub-menu-bar'), content = document.getElementById('sub-content');
             document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-            if (activeCategory === cat) { activeCategory = 'all'; bar.classList.remove('active'); fetchAds(); return; }
-            activeCategory = cat; btn.classList.add('active'); bar.classList.add('active');
+            if (activeCategory === cat) { activeCategory = 'all'; activeSubCategory = 'الكل'; bar.classList.remove('active'); fetchAds(); return; }
+            activeCategory = cat; activeSubCategory = 'الكل'; btn.classList.add('active'); bar.classList.add('active');
             content.innerHTML = `<button onclick="filterBySub('${cat}', 'الكل')" class="bg-white border border-blue-200 text-blue-600 px-4 py-2 rounded-full text-xs font-bold shadow-sm">كل ${label}</button>` + (cats[cat] || []).map(s => `<button onclick="filterBySub('${cat}', '${s}')" class="bg-white border border-gray-100 text-gray-600 px-4 py-2 rounded-full text-xs font-bold shadow-sm">${s}</button>`).join('');
             fetchAds();
         };
-        window.filterBySub = (cat, sub) => { activeSubCategory = sub; fetchAds(); };
 
+        window.filterBySub = (cat, sub) => { activeSubCategory = sub; document.querySelectorAll('#sub-content button').forEach(b => { if(b.innerText.includes(sub)) { b.classList.replace('text-gray-600', 'text-blue-600'); b.classList.add('border-blue-200'); } else { b.classList.replace('text-blue-600', 'text-gray-600'); b.classList.remove('border-blue-200'); } }); fetchAds(); };
         window.logout = () => { localStorage.removeItem('user'); window.location.reload(); };
 
         if (user) {
-            // إعادة بناء قسم الحساب بشكل نظيف يحافظ على التصميم المتجاوب
-            document.getElementById('auth-section').innerHTML = `
-                <div class="flex items-center gap-3">
-                    <div class="flex flex-col items-end">
-                        <span class="text-[10px] font-black text-gray-700">أهلاً، ${user.name}</span>
-                        <button onclick="logout()" class="text-[9px] font-bold text-red-500 hover:underline">خروج</button>
-                    </div>
-                    <a href="my-ads.html" class="text-xs font-black text-gray-500 hover:text-blue-600 px-2 transition-colors border-r pr-2">إعلاناتي</a>
-                </div>
-            `;
-            document.getElementById('mobile-account-link').href = 'my-ads.html';
+            const authSection = document.getElementById('auth-section');
+            if(authSection) authSection.innerHTML = `<div class="flex items-center gap-3"><div class="flex flex-col items-end"><span class="text-[10px] font-black text-gray-700">أهلاً، ${user.name}</span><button onclick="logout()" class="text-[9px] font-bold text-red-500 hover:underline">خروج</button></div><a href="my-ads.html" class="text-xs font-black text-gray-500 hover:text-blue-600 px-2 transition-colors border-r pr-2">إعلاناتي</a></div>`;
+            const mobileLink = document.getElementById('mobile-account-link');
+            if(mobileLink) mobileLink.href = 'my-ads.html';
             listenToUnreadMessages();
         }
         fetchAds();
