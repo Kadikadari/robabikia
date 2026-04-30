@@ -25,8 +25,8 @@
     <main class="flex-1 flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-md rounded-3xl shadow-xl border border-gray-100 overflow-hidden form-container">
             <div class="flex border-b">
-                <button id="login-tab" onclick="switchTab('login')" class="flex-1 py-4 text-sm font-black transition-all border-b-2 border-blue-600 text-blue-600">تسجيل الدخول</button>
-                <button id="signup-tab" onclick="switchTab('signup')" class="flex-1 py-4 text-sm font-black text-gray-400 border-b-2 border-transparent hover:text-gray-600 transition-all">إنشاء حساب جديد</button>
+                <button id="login-tab" class="flex-1 py-4 text-sm font-black transition-all border-b-2 border-blue-600 text-blue-600">تسجيل الدخول</button>
+                <button id="signup-tab" class="flex-1 py-4 text-sm font-black text-gray-400 border-b-2 border-transparent hover:text-gray-600 transition-all">إنشاء حساب جديد</button>
             </div>
 
             <!-- Login Form -->
@@ -53,7 +53,7 @@
             </div>
 
             <!-- Signup Form -->
-            <div id="signup-form-container" class="p-8" style="display: none;">
+            <div id="signup-form-container" class="p-8 hidden">
                 <div class="text-center mb-8">
                     <h2 class="text-2xl font-black text-gray-800">أهلاً بيك في عيلتنا!</h2>
                     <p class="text-xs text-gray-400 font-bold mt-1">اختر اللقب الذي سيظهر للناس (خصوصيتك تهمنا)</p>
@@ -83,23 +83,24 @@
     <script type="module">
         import { auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from "./firebase-config.js";
 
-        window.switchTab = function(type) {
-            const loginForm = document.getElementById('login-form-container');
-            const signupForm = document.getElementById('signup-form-container');
-            const loginTab = document.getElementById('login-tab');
-            const signupTab = document.getElementById('signup-tab');
+        // تعريف وظيفة التبديل وربطها بالأحداث برمجياً لتعمل داخل الموديول
+        const loginTab = document.getElementById('login-tab');
+        const signupTab = document.getElementById('signup-tab');
+        const loginForm = document.getElementById('login-form-container');
+        const signupForm = document.getElementById('signup-form-container');
 
+        function switchTab(type) {
             if (type === 'login') {
-                loginForm.style.display = 'block';
-                signupForm.style.display = 'none';
+                loginForm.classList.remove('hidden');
+                signupForm.classList.add('hidden');
 
                 loginTab.classList.add('border-blue-600', 'text-blue-600');
                 loginTab.classList.remove('text-gray-400', 'border-transparent');
                 signupTab.classList.remove('border-blue-600', 'text-blue-600');
                 signupTab.classList.add('text-gray-400', 'border-transparent');
             } else {
-                loginForm.style.display = 'none';
-                signupForm.style.display = 'block';
+                loginForm.classList.add('hidden');
+                signupForm.classList.remove('hidden');
 
                 signupTab.classList.add('border-blue-600', 'text-blue-600');
                 signupTab.classList.remove('text-gray-400', 'border-transparent');
@@ -108,11 +109,21 @@
             }
         }
 
+        // ربط الأزرار بالوظيفة
+        loginTab.addEventListener('click', () => switchTab('login'));
+        signupTab.addEventListener('click', () => switchTab('signup'));
+
+        // معالجة تسجيل الدخول
         document.getElementById('actual-login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('login-email').value;
             const password = document.getElementById('login-password').value;
             const errorEl = document.getElementById('login-error');
+            const btn = e.target.querySelector('button');
+
+            btn.disabled = true;
+            btn.innerText = "جاري الدخول...";
+
             try {
                 const userCredential = await signInWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
@@ -122,17 +133,25 @@
                 }));
                 window.location.href = 'index.html';
             } catch (error) {
-                errorEl.innerText = "خطأ في تسجيل الدخول: تأكد من البيانات";
+                errorEl.innerText = "خطأ في تسجيل الدخول: تأكد من البريد وكلمة السر";
                 errorEl.classList.remove('hidden');
+                btn.disabled = false;
+                btn.innerText = "دخول";
             }
         });
 
+        // معالجة إنشاء الحساب
         document.getElementById('actual-signup-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const nickname = document.getElementById('signup-name').value;
             const email = document.getElementById('signup-email').value;
             const password = document.getElementById('signup-password').value;
             const errorEl = document.getElementById('signup-error');
+            const btn = e.target.querySelector('button');
+
+            btn.disabled = true;
+            btn.innerText = "جاري إنشاء الحساب...";
+
             try {
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 await updateProfile(userCredential.user, { displayName: nickname });
@@ -142,8 +161,14 @@
                 }));
                 window.location.href = 'index.html';
             } catch (error) {
-                errorEl.innerText = "خطأ في إنشاء الحساب: " + error.message;
+                let msg = "خطأ في إنشاء الحساب";
+                if (error.code === 'auth/email-already-in-use') msg = "هذا البريد مستخدم بالفعل";
+                else if (error.code === 'auth/weak-password') msg = "كلمة المرور ضعيفة جداً";
+
+                errorEl.innerText = msg;
                 errorEl.classList.remove('hidden');
+                btn.disabled = false;
+                btn.innerText = "إنشاء حساب باللقب";
             }
         });
     </script>
