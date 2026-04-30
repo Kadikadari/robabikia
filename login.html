@@ -79,7 +79,7 @@
     <footer class="p-6 text-center text-gray-400 text-[10px] font-bold">جميع الحقوق محفوظة © 2024 روبابيكيا</footer>
 
     <script type="module">
-        import { auth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "./firebase-config.js";
+        import { auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from "./firebase-config.js";
 
         window.switchTab = function(type) {
             const loginForm = document.getElementById('login-form');
@@ -112,7 +112,12 @@
 
             try {
                 const userCredential = await signInWithEmailAndPassword(auth, email, password);
-                localStorage.setItem('user', JSON.stringify({ name: email.split('@')[0], email: email }));
+                const user = userCredential.user;
+                // Use displayName if available, otherwise fallback to email prefix
+                localStorage.setItem('user', JSON.stringify({
+                    name: user.displayName || email.split('@')[0],
+                    email: email
+                }));
                 window.location.href = 'index.html';
             } catch (error) {
                 errorEl.innerText = "خطأ في تسجيل الدخول: تأكد من البيانات";
@@ -129,6 +134,9 @@
 
             try {
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                // Update Firebase Profile with the chosen name
+                await updateProfile(userCredential.user, { displayName: name });
+
                 localStorage.setItem('user', JSON.stringify({ name: name, email: email }));
                 window.location.href = 'index.html';
             } catch (error) {
