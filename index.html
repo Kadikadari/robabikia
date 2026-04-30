@@ -246,9 +246,50 @@
             }).join('');
         }
 
+        // SEO Helper Functions
+        function updateSEO(title, description, imageUrl = null) {
+            document.title = title + " | روبابيكيا";
+            const metaDesc = document.querySelector('meta[name="description"]');
+            if (metaDesc) metaDesc.setAttribute('content', description);
+            const ogTitle = document.querySelector('meta[property="og:title"]');
+            if (ogTitle) ogTitle.setAttribute('content', title);
+            if (imageUrl) {
+                const ogImage = document.querySelector('meta[property="og:image"]');
+                if (ogImage) ogImage.setAttribute('content', imageUrl);
+            }
+        }
+
+        function injectStructuredData(ad) {
+            let script = document.getElementById('structured-data');
+            if (!script) {
+                script = document.createElement('script');
+                script.id = 'structured-data';
+                script.type = 'application/ld+json';
+                document.head.appendChild(script);
+            }
+            const json = {
+                "@context": "https://schema.org",
+                "@type": "Product",
+                "name": ad.title,
+                "image": getSafeImageUrl(ad.image_url),
+                "description": ad.description,
+                "offers": {
+                    "@type": "Offer",
+                    "price": ad.price,
+                    "priceCurrency": "EGP",
+                    "availability": "https://schema.org/InStock"
+                }
+            };
+            script.text = JSON.stringify(json);
+        }
+
         window.openProductModal = function(id) {
             const ad = adsCache.find(a => a.id == id);
             if (!ad) return;
+
+            // Update SEO and Structured Data
+            updateSEO(ad.title, `اشتري ${ad.title} في ${ad.location} بسعر ${ad.price} ج.م. تصفح أفضل العروض على روبابيكيا مصر.`, getSafeImageUrl(ad.image_url));
+            injectStructuredData(ad);
 
             // Determine increment: 100 for real ads, 1 for mock ads
             const isMock = id.toString().startsWith('mock-');
@@ -316,7 +357,13 @@
             document.body.style.overflow = 'hidden';
         };
 
-        window.closeProductModal = () => { document.getElementById('product-modal').style.display = 'none'; document.body.style.overflow = 'auto'; };
+        window.closeProductModal = () => {
+            document.getElementById('product-modal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+            // Reset SEO when closing modal
+            updateSEO("روبابيكيا - بيع واشتري أي حاجة في مصر", "سوقك الموثوق لبيع وشراء كل شيء في مصر. سيارات، عقارات، إلكترونيات.");
+        };
+
         window.showImage = (idx) => {
             currentImgIndex = idx;
             document.getElementById('modal-main-img').src = currentAdImages[idx];
@@ -353,7 +400,7 @@
             "سوهاج - سوهاج", "سوهاج - طما", "سوهاج - جرجا", "سوهاج - أخميم", "سوهاج - المنشاة", "سوهاج - طهطا",
             "قنا - قنا", "قنا - نجع حمادي", "قنا - دشنا", "قنا - قوص", "قنا - قفط", "قنا - أبو تشت",
             "الأقصر - مدينة الأقصر", "الأقصر - إسنا", "الأقصر - أرمنت", "الأقصر - القرنة", "الأقصر - طيبة",
-            "أسوان - مدينة أسوان", "أسوان - كوم أمبو", "أسوان - إدفو", "أسوان - دراو", "أسوان - نصر النوبة",
+            "أسوان - مدينة أسوان", "أسوان - كوم أمبو", "أسوان - إدفو", "أسوان - دراو", "أسوان - nصر النوبة",
             "البحر الأحمر - الغردقة", "البحر الأحمر - الجونة", "البحر الأحمر - سفاجا", "البحر الأحمر - مرسى علم", "البحر الأحمر - القصير",
             "مطروح - مرسى مطروح", "مطروح - الساحل الشمالي", "مطروح - سيوة", "مطروح - الضبعة", "مطروح - العلمين",
             "الوادي الجديد - الخارجة", "الوادي الجديد - الداخلة", "الوادي الجديد - الفرافرة",
@@ -370,9 +417,22 @@
                 list.map(l => `<div onclick="selectLocation('${l}')" class="p-3 hover:bg-blue-50 rounded-xl cursor-pointer font-bold text-sm border-b border-gray-50 last:border-0">📍 ${l}</div>`).join('');
         }
         window.filterLocationsUI = () => renderLocationsUI(egyptLocations.filter(l => l.toLowerCase().includes(document.getElementById('location-search-input').value.toLowerCase())));
-        window.selectLocation = (l) => { selectedLocation = l; localStorage.setItem('userLocation', l); document.getElementById('current-city-name').innerText = l; toggleLocationModal(); fetchAds(); };
+        window.selectLocation = (l) => {
+            selectedLocation = l;
+            localStorage.setItem('userLocation', l);
+            document.getElementById('current-city-name').innerText = l;
+            toggleLocationModal();
+            updateSEO(`إعلانات في ${l}`, `تصفح آلاف الإعلانات والمنتجات المعروضة للبيع في ${l}. سيارات، عقارات، إلكترونيات والمزيد.`);
+            fetchAds();
+        };
 
-        document.getElementById('search-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') { searchTerm = e.target.value; fetchAds(); } });
+        document.getElementById('search-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                searchTerm = e.target.value;
+                updateSEO(`بحث عن: ${searchTerm}`, `نتائج البحث عن ${searchTerm} في روبابيكيا مصر.`);
+                fetchAds();
+            }
+        });
 
         const cats = {
             cars: ['سيارات للبيع', 'سيارات للإيجار', 'موتوسيكلات', 'قطع غيار', 'إكسسوارات', 'كاوتش وبطاريات', 'أتوبيسات وشاحنات'],
@@ -392,9 +452,14 @@
             activeCategory = cat; btn.classList.add('active'); bar.classList.add('active');
             content.innerHTML = `<button onclick="filterBySub('${cat}', 'الكل')" class="bg-white border border-blue-200 text-blue-600 px-4 py-2 rounded-full text-xs font-bold shadow-sm">كل ${label}</button>` +
                 cats[cat].map(s => `<button onclick="filterBySub('${cat}', '${s}')" class="bg-white border border-gray-100 text-gray-600 px-4 py-2 rounded-full text-xs font-bold shadow-sm">${s}</button>`).join('');
+            updateSEO(label, `تصفح قسم ${label} في روبابيكيا. أفضل العروض والأسعار في مصر.`);
             fetchAds();
         };
-        window.filterBySub = (cat, sub) => { activeSubCategory = sub; fetchAds(); };
+        window.filterBySub = (cat, sub) => {
+            activeSubCategory = sub;
+            updateSEO(sub, `تصفح ${sub} في روبابيكيا. آلاف الإعلانات المتجددة يومياً.`);
+            fetchAds();
+        };
 
         if (user) {
             document.getElementById('auth-section').innerHTML = `<a href="my-ads.html" class="text-xs font-black text-gray-500 hover:text-blue-600 px-3 transition-colors">إعلاناتي</a><a href="add-ad.html" class="bg-blue-600 text-white px-5 py-2.5 rounded-xl font-black text-xs shadow-md">+ بيع دلوقتي</a>`;
