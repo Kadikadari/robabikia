@@ -118,8 +118,8 @@
                 <input type="text" id="search-input" placeholder="بتدور على إيه؟" class="w-full bg-gray-100 rounded-xl py-2 md:py-2.5 px-8 md:px-10 outline-none focus:ring-2 focus:ring-blue-500 text-[11px] md:text-sm border-none text-right">
                 <div class="absolute right-2 md:right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs md:text-sm">🔍</div>
             </div>
-            <div id="auth-section" class="hidden md:flex items-center gap-3 shrink-0 text-right">
-                <a href="login.html" class="text-xs font-black text-gray-500 hover:text-blue-600 px-3 transition-colors">دخول</a>
+            <div id="auth-section" class="flex items-center gap-2 shrink-0">
+                <a href="login.html" class="text-xs font-black text-gray-500 hover:text-blue-600 px-3 transition-colors">دخول / تسجيل</a>
                 <a href="login.html" class="bg-blue-600 text-white px-5 py-2.5 rounded-xl font-black text-xs shadow-md">+ بيع دلوقتي</a>
             </div>
         </div>
@@ -176,7 +176,7 @@
 
         let user = JSON.parse(localStorage.getItem('user'));
 
-        // نظام حماية الخصوصية: تنظيف اسم المستخدم من أي أثر للإيميل
+        // تنظيف وحماية الخصوصية
         if (user && user.name) {
             const emailPart = user.email.split('@')[0];
             if (user.name.includes('@') || user.name === emailPart) {
@@ -320,7 +320,6 @@
             document.getElementById('modal-location').innerText = ad.location;
             document.getElementById('modal-desc').innerText = ad.description;
 
-            // التأكد من عرض اللقب المختار فقط
             const sellerName = ad.seller_name || "بائع روبابيكيا";
             document.getElementById('modal-seller-name').innerText = sellerName;
 
@@ -444,10 +443,16 @@
             fetchAds();
         };
 
+        window.logout = () => {
+            localStorage.removeItem('user');
+            window.location.reload();
+        };
+
         if (user) {
             document.getElementById('auth-section').innerHTML = `
                 <div class="flex items-center gap-2 ml-4">
                     <span class="text-[10px] font-black text-gray-400">أهلاً، <span class="text-blue-600">${user.name}</span></span>
+                    <button onclick="logout()" class="text-[9px] font-bold text-red-500 hover:underline">خروج</button>
                 </div>
                 <a href="my-ads.html" class="text-xs font-black text-gray-500 hover:text-blue-600 px-3 transition-colors">إعلاناتي</a>
                 <a href="add-ad.html" class="bg-blue-600 text-white px-5 py-2.5 rounded-xl font-black text-xs shadow-md">+ بيع دلوقتي</a>
