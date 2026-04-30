@@ -256,7 +256,7 @@
 
             // Increment views locally
             ad.views = (parseInt(ad.views) || 0) + increment;
-            document.getElementById('modal-views').innerText = `👁️ ${ad.views}`;
+            document.getElementById('modal-views').innerHTML = `👁️ ${ad.views} <span class="text-[8px] font-normal text-gray-400 mr-1">عدد مشاهدات الاعلان</span>`;
 
             // Update real ads in Supabase
             if (!isMock) {
