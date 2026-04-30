@@ -71,7 +71,10 @@
             <div class="w-full md:w-1/2 p-6 flex flex-col overflow-y-auto no-scrollbar text-right">
                 <div class="flex items-center gap-2 mb-4">
                     <span class="bg-blue-100 text-blue-600 text-[10px] font-black px-2 py-1 rounded-md">إعلان موثوق</span>
-                    <span id="modal-time" class="text-[10px] text-gray-400 mr-auto"></span>
+                    <div class="mr-auto flex items-center gap-3">
+                        <span id="modal-views" class="text-[10px] text-gray-500 font-bold flex items-center gap-1">👁️ 0</span>
+                        <span id="modal-time" class="text-[10px] text-gray-400"></span>
+                    </div>
                 </div>
                 <h2 id="modal-title" class="text-xl font-black text-gray-800 mb-2 leading-tight"></h2>
                 <p id="modal-price" class="text-2xl font-black text-blue-600 mb-6"></p>
@@ -245,6 +248,19 @@
             const ad = adsCache.find(a => a.id == id);
             if (!ad) return;
 
+            // Determine increment: 100 for real ads, 1 for mock ads
+            const isMock = id.toString().startsWith('mock-');
+            const increment = isMock ? 1 : 100;
+
+            // Increment views locally
+            ad.views = (ad.views || 0) + increment;
+            document.getElementById('modal-views').innerText = `👁️ ${ad.views}`;
+
+            // Update real ads in Supabase
+            if (!isMock) {
+                supabase.from('ads').update({ views: ad.views }).eq('id', id).then();
+            }
+
             currentAdImages = [];
             try { currentAdImages = JSON.parse(ad.image_url); } catch(e) { currentAdImages = [ad.image_url]; }
             showImage(0);
@@ -319,7 +335,7 @@
             "الإسكندرية - سموحة", "الإسكندرية - ميامي", "الإسكندرية - سيدي بشر", "الإسكندرية - العجمي", "الإسكندرية - لوران", "الإسكندرية - جليم", "الإسكندرية - المعمورة", "الإسكندرية - محرم بك", "الإسكندرية - المنشية", "الإسكندرية - كينج مريوط", "الإسكندرية - العامرية",
             "القليوبية - بنها", "القليوبية - شبرا الخيمة", "القليوبية - القناطر الخيرية", "القليوبية - الخانكة", "القليوبية - قليوب", "القليوبية - طوخ", "القليوبية - قها",
             "الشرقية - الزقازيق", "الشرقية - العاشر من رمضان", "الشرقية - بلبيس", "الشرقية - فاقوس", "الشرقية - منيا القمح", "الشرقية - أبو حماد", "الشرقية - ديرب نجم",
-            "الدقهلية - المنصورة", "الدقهلية - طلخا", "الدقهلية - ميت غمر", "الدقهلية - السنبلاوين", "الدقهلية - شربين", "الدقهلية - دكرنس", "الدقهلية - بلقاس",
+            "الدقهلية - المنصورة", "الدقهلية - طلخا", "الدقهلية - ميت غمر", "الدقهلية - السنبلاوين", "الدقهلية - شربين", "الدقهلية - dكرنس", "الدقهلية - بلقاس",
             "الغربية - طنطا", "الغربية - المحلة الكبرى", "الغربية - كفر الزيات", "الغربية - زفتى", "الغربية - بسيون", "الغربية - قطور", "الغربية - السنطة",
             "المنوفية - شبين الكوم", "المنوفية - قويسنا", "المنوفية - أشمون", "المنوفية - منوف", "المنوفية - السادات", "المنوفية - الباجور", "المنوفية - بركة السبع",
             "البحيرة - dمنهور", "البحيرة - كفر الدوار", "البحيرة - إيتاي البارود", "البحيرة - رشيد", "البحيرة - كوم حمادة", "البحيرة - أبو حمص", "البحيرة - حوش عيسى",

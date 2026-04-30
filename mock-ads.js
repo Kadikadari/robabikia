@@ -30,6 +30,7 @@ export function generateMockAds(count = 200) {
             whatsapp: '01000000000',
             allow_chat: true,
             seller_email: 'support@robabikia.com',
+            views: Math.floor(Math.random() * 500) + 10,
             created_at: new Date().toISOString()
         });
     }
