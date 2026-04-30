@@ -12,6 +12,8 @@
         .form-container { animation: fadeIn 0.4s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         .hidden-form { display: none !important; }
+        .loading-spinner { border: 3px solid #f3f3f3; border-top: 3px solid #3498db; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; margin-left: 10px; vertical-align: middle; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
@@ -49,7 +51,7 @@
                         <input type="password" id="login-password" required placeholder="••••••••" class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm text-right">
                     </div>
                     <p id="login-error" class="text-red-500 text-[10px] font-bold hidden text-center"></p>
-                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl font-black text-sm shadow-lg shadow-blue-100 transition-all active:scale-95 mt-6">دخول</button>
+                    <button type="submit" id="login-submit-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl font-black text-sm shadow-lg shadow-blue-100 transition-all active:scale-95 mt-6">دخول</button>
                 </form>
             </div>
 
@@ -73,7 +75,7 @@
                         <input type="password" id="signup-password" required placeholder="••••••••" class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm text-right">
                     </div>
                     <p id="signup-error" class="text-red-500 text-[10px] font-bold hidden text-center"></p>
-                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl font-black text-sm shadow-lg shadow-blue-100 transition-all active:scale-95 mt-6">إنشاء حساب باللقب</button>
+                    <button type="submit" id="signup-submit-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl font-black text-sm shadow-lg shadow-blue-100 transition-all active:scale-95 mt-6">إنشاء حساب باللقب</button>
                 </form>
             </div>
         </div>
@@ -81,7 +83,6 @@
 
     <footer class="p-6 text-center text-gray-400 text-[10px] font-bold">جميع الحقوق محفوظة © 2024 روبابيكيا</footer>
 
-    <!-- سكريبت التبديل (عادي لضمان العمل الفوري) -->
     <script>
         function toggleAuthTab(type) {
             const loginForm = document.getElementById('login-form-container');
@@ -105,22 +106,24 @@
                 loginTab.classList.add('text-gray-400', 'border-transparent');
             }
         }
-
-        // تفقد الرابط إذا كان يطلب فتح التسجيل مباشرة
-        if (new URLSearchParams(window.location.search).get('tab') === 'signup') {
-            toggleAuthTab('signup');
-        }
+        if (new URLSearchParams(window.location.search).get('tab') === 'signup') toggleAuthTab('signup');
     </script>
 
-    <!-- سكريبت البيانات (موديول) -->
     <script type="module">
         import { auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from "./firebase-config.js";
 
+        // تسجيل الدخول
         document.getElementById('actual-login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const email = document.getElementById('login-email').value;
+            const email = document.getElementById('login-email').value.trim();
             const password = document.getElementById('login-password').value;
             const errorEl = document.getElementById('login-error');
+            const btn = document.getElementById('login-submit-btn');
+
+            errorEl.classList.add('hidden');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading-spinner"></span> جاري الدخول...';
+
             try {
                 const userCredential = await signInWithEmailAndPassword(auth, email, password);
                 localStorage.setItem('user', JSON.stringify({
@@ -129,25 +132,57 @@
                 }));
                 window.location.href = 'index.html';
             } catch (error) {
-                errorEl.innerText = "خطأ في تسجيل الدخول: تأكد من البيانات";
+                errorEl.innerText = "خطأ: تأكد من البريد وكلمة السر";
                 errorEl.classList.remove('hidden');
+                btn.disabled = false;
+                btn.innerHTML = 'دخول';
             }
         });
 
+        // إنشاء الحساب
         document.getElementById('actual-signup-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const nickname = document.getElementById('signup-name').value;
-            const email = document.getElementById('signup-email').value;
+            const nickname = document.getElementById('signup-name').value.trim();
+            const email = document.getElementById('signup-email').value.trim();
             const password = document.getElementById('signup-password').value;
             const errorEl = document.getElementById('signup-error');
+            const btn = document.getElementById('signup-submit-btn');
+
+            errorEl.classList.add('hidden');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading-spinner"></span> جاري إنشاء الحساب...';
+
             try {
+                // 1. إنشاء الحساب في Firebase
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+
+                // 2. تحديث اللقب (DisplayName) في Firebase
                 await updateProfile(userCredential.user, { displayName: nickname });
-                localStorage.setItem('user', JSON.stringify({ name: nickname, email: email.toLowerCase() }));
-                window.location.href = 'index.html';
+
+                // 3. حفظ البيانات محلياً للتطبيق
+                localStorage.setItem('user', JSON.stringify({
+                    name: nickname,
+                    email: email.toLowerCase()
+                }));
+
+                // 4. رسالة نجاح نهائية
+                btn.innerHTML = '✓ تم التسجيل بنجاح! جاري التحويل...';
+                btn.classList.replace('bg-blue-600', 'bg-green-600');
+
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 1500);
+
             } catch (error) {
-                errorEl.innerText = "خطأ في إنشاء الحساب: " + error.message;
+                let msg = "حدث خطأ أثناء التسجيل";
+                if (error.code === 'auth/email-already-in-use') msg = "هذا البريد الإلكتروني مستخدم بالفعل";
+                if (error.code === 'auth/weak-password') msg = "كلمة المرور يجب أن تكون 6 أحرف على الأقل";
+
+                errorEl.innerText = msg;
                 errorEl.classList.remove('hidden');
+                btn.disabled = false;
+                btn.innerHTML = 'إنشاء حساب باللقب';
+                btn.classList.replace('bg-green-600', 'bg-blue-600');
             }
         });
     </script>

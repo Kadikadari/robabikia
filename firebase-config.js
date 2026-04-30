@@ -1,6 +1,6 @@
 // إعدادات Firebase الحقيقية لمشروع روبابيكيا
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, where, serverTimestamp, doc, updateDoc, arrayUnion, arrayRemove, getDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -20,7 +20,7 @@ const db = getFirestore(app);
 
 export {
     auth, db, onAuthStateChanged, signInWithEmailAndPassword,
-    createUserWithEmailAndPassword, signOut, collection,
+    createUserWithEmailAndPassword, signOut, updateProfile, collection,
     addDoc, query, orderBy, onSnapshot, where,
     serverTimestamp, doc, updateDoc, arrayUnion, arrayRemove, getDoc, getDocs
 };
