@@ -32,7 +32,7 @@
             <div id="login-form" class="p-8">
                 <div class="text-center mb-8">
                     <h2 class="text-2xl font-black text-gray-800">حمداً لله على سلامتك!</h2>
-                    <p class="text-xs text-gray-400 font-bold mt-1">سجل دخولك عشان تبدأ تبيع وتشتري</p>
+                    <p class="text-xs text-gray-400 font-bold mt-1">سجل دخولك باسمك المختار وابدأ رحلتك</p>
                 </div>
                 <form id="actual-login-form" class="space-y-4">
                     <div>
@@ -54,12 +54,12 @@
             <div id="signup-form" class="p-8 hidden">
                 <div class="text-center mb-8">
                     <h2 class="text-2xl font-black text-gray-800">أهلاً بيك في عيلتنا!</h2>
-                    <p class="text-xs text-gray-400 font-bold mt-1">أنشئ حسابك في ثواني وابدأ رحلتك معنا</p>
+                    <p class="text-xs text-gray-400 font-bold mt-1">اختر اللقب الذي سيظهر للناس (خصوصيتك تهمنا)</p>
                 </div>
                 <form id="actual-signup-form" class="space-y-4">
                     <div>
-                        <label class="text-xs font-black text-gray-600 block mb-2 mr-1">الاسم بالكامل</label>
-                        <input type="text" id="signup-name" required placeholder="مثلاً: أحمد محمد" class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm text-right">
+                        <label class="text-xs font-black text-gray-600 block mb-2 mr-1">اللقب (الاسم المستعار)</label>
+                        <input type="text" id="signup-name" required placeholder="مثلاً: بائع مميز، فاعل خير، مستخدم123" class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm text-right">
                     </div>
                     <div>
                         <label class="text-xs font-black text-gray-600 block mb-2 mr-1">البريد الإلكتروني</label>
@@ -70,7 +70,7 @@
                         <input type="password" id="signup-password" required placeholder="••••••••" class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm text-right">
                     </div>
                     <p id="signup-error" class="text-red-500 text-[10px] font-bold hidden text-center"></p>
-                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl font-black text-sm shadow-lg shadow-blue-100 transition-all active:scale-95 mt-6">إنشاء حساب</button>
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl font-black text-sm shadow-lg shadow-blue-100 transition-all active:scale-95 mt-6">إنشاء حساب باللقب</button>
                 </form>
             </div>
         </div>
@@ -113,10 +113,13 @@
             try {
                 const userCredential = await signInWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
-                // Use displayName if available, otherwise fallback to email prefix
+
+                // الحل النهائي: نستخدم اللقب فقط، وإذا كان مفقوداً نستخدم لقب افتراضي عام
+                const nickname = user.displayName || "عضو روبابيكيا";
+
                 localStorage.setItem('user', JSON.stringify({
-                    name: user.displayName || email.split('@')[0],
-                    email: email
+                    name: nickname,
+                    email: email.toLowerCase()
                 }));
                 window.location.href = 'index.html';
             } catch (error) {
@@ -127,17 +130,23 @@
 
         document.getElementById('actual-signup-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const name = document.getElementById('signup-name').value;
+            const nickname = document.getElementById('signup-name').value;
             const email = document.getElementById('signup-email').value;
             const password = document.getElementById('signup-password').value;
             const errorEl = document.getElementById('signup-error');
 
             try {
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                // Update Firebase Profile with the chosen name
-                await updateProfile(userCredential.user, { displayName: name });
 
-                localStorage.setItem('user', JSON.stringify({ name: name, email: email }));
+                // حفظ اللقب فوراً في ملف المستخدم في Firebase
+                await updateProfile(userCredential.user, { displayName: nickname });
+
+                // تخزين اللقب المختار فقط في المتصفح
+                localStorage.setItem('user', JSON.stringify({
+                    name: nickname,
+                    email: email.toLowerCase()
+                }));
+
                 window.location.href = 'index.html';
             } catch (error) {
                 errorEl.innerText = "خطأ في إنشاء الحساب: " + error.message;

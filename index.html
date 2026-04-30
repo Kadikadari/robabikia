@@ -118,7 +118,7 @@
                 <input type="text" id="search-input" placeholder="بتدور على إيه؟" class="w-full bg-gray-100 rounded-xl py-2 md:py-2.5 px-8 md:px-10 outline-none focus:ring-2 focus:ring-blue-500 text-[11px] md:text-sm border-none text-right">
                 <div class="absolute right-2 md:right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs md:text-sm">🔍</div>
             </div>
-            <div id="auth-section" class="hidden md:flex items-center gap-3 shrink-0">
+            <div id="auth-section" class="hidden md:flex items-center gap-3 shrink-0 text-right">
                 <a href="login.html" class="text-xs font-black text-gray-500 hover:text-blue-600 px-3 transition-colors">دخول</a>
                 <a href="login.html" class="bg-blue-600 text-white px-5 py-2.5 rounded-xl font-black text-xs shadow-md">+ بيع دلوقتي</a>
             </div>
@@ -174,7 +174,17 @@
         let activeSubCategory = 'الكل';
         let searchTerm = '';
 
-        const user = JSON.parse(localStorage.getItem('user'));
+        let user = JSON.parse(localStorage.getItem('user'));
+
+        // نظام حماية الخصوصية: تنظيف اسم المستخدم من أي أثر للإيميل
+        if (user && user.name) {
+            const emailPart = user.email.split('@')[0];
+            if (user.name.includes('@') || user.name === emailPart) {
+                user.name = "عضو روبابيكيا";
+                localStorage.setItem('user', JSON.stringify(user));
+            }
+        }
+
         document.getElementById('current-city-name').innerText = selectedLocation;
 
         const mockAds = generateMockAds(200);
@@ -186,7 +196,6 @@
             if (activeSubCategory !== 'الكل') qB = qB.eq('sub_category', activeSubCategory);
             if (searchTerm) qB = qB.ilike('title', `%${searchTerm}%`);
 
-            // Limit to 20 for better performance
             const { data, error } = await qB.order('created_at', { ascending: false }).limit(20);
 
             let realAds = data || [];
@@ -198,7 +207,6 @@
                 return true;
             });
 
-            // Combine and keep only the latest 20 total
             adsCache = [...realAds, ...filteredMock].slice(0, 20);
             renderAds(adsCache);
             checkDirectLink();
@@ -290,19 +298,15 @@
             const ad = adsCache.find(a => a.id == id);
             if (!ad) return;
 
-            // Update SEO and Structured Data
             updateSEO(ad.title, `اشتري ${ad.title} في ${ad.location} بسعر ${ad.price} ج.م. تصفح أفضل العروض على روبابيكيا مصر.`, getSafeImageUrl(ad.image_url));
             injectStructuredData(ad);
 
-            // Determine increment: 100 for real ads, 1 for mock ads
             const isMock = id.toString().startsWith('mock-');
             const increment = isMock ? 1 : 100;
 
-            // Increment views locally
             ad.views = (parseInt(ad.views) || 0) + increment;
             document.getElementById('modal-views').innerHTML = `👁️ ${ad.views} <span class="text-[8px] font-normal text-gray-400 mr-1">عدد مشاهدات الاعلان</span>`;
 
-            // Update real ads in Supabase
             if (!isMock) {
                 supabase.from('ads').update({ views: ad.views }).eq('id', id).then();
             }
@@ -316,8 +320,9 @@
             document.getElementById('modal-location').innerText = ad.location;
             document.getElementById('modal-desc').innerText = ad.description;
 
-            // Show Seller Name
-            document.getElementById('modal-seller-name').innerText = ad.seller_name || "بائع روبابيكيا";
+            // التأكد من عرض اللقب المختار فقط
+            const sellerName = ad.seller_name || "بائع روبابيكيا";
+            document.getElementById('modal-seller-name').innerText = sellerName;
 
             const callBtn = document.getElementById('call-btn');
             const whatsappBtn = document.getElementById('whatsapp-btn');
@@ -366,7 +371,6 @@
         window.closeProductModal = () => {
             document.getElementById('product-modal').style.display = 'none';
             document.body.style.overflow = 'auto';
-            // Reset SEO when closing modal
             updateSEO("روبابيكيا - بيع واشتري أي حاجة في مصر", "سوقك الموثوق لبيع وشراء كل شيء في مصر. سيارات، عقارات، إلكترونيات.");
         };
 
@@ -384,35 +388,8 @@
             try { const p = JSON.parse(url); return Array.isArray(p) ? p[0] : url; } catch(e) { return url; }
         }
 
-        const egyptLocations = [
-            "القاهرة - مدينة نصر", "القاهرة - التجمع الخامس", "القاهرة - مصر الجديدة", "القاهرة - المعادي", "القاهرة - الرحاب", "القاهرة - مدينتي", "القاهرة - الشروق", "القاهرة - العبور", "القاهرة - وسط البلد", "القاهرة - شبرا", "القاهرة - حلوان", "القاهرة - المقطم", "القاهرة - الزمالك", "القاهرة - عين شمس", "القاهرة - المطرية", "القاهرة - المرج", "القاهرة - السيدة زينب",
-            "الجيزة - 6 أكتوبر", "الجيزة - الشيخ زايد", "الجيزة - الهرم", "الجيزة - فيصل", "الجيزة - المهندسين", "الجيزة - الدقي", "الجيزة - حدائق الأهرام", "الجيزة - العمرانية", "الجيزة - الوراق", "الجيزة - إمبابة", "الجيزة - بولاق الدكرور", "الجيزة - الحوامدية", "الجيزة - البدرشين",
-            "الإسكندرية - سموحة", "الإسكندرية - ميامي", "الإسكندرية - سيدي بشر", "الإسكندرية - العجمي", "الإسكندرية - لوران", "الإسكندرية - جليم", "الإسكندرية - المعمورة", "الإسكندرية - محرم بك", "الإسكندرية - المنشية", "الإسكندرية - كينج مريوط", "الإسكندرية - العامرية",
-            "القليوبية - بنها", "القليوبية - شبرا الخيمة", "القليوبية - القناطر الخيرية", "القليوبية - الخانكة", "القليوبية - قليوب", "القليوبية - طوخ", "القليوبية - قها",
-            "الشرقية - الزقازيق", "الشرقية - العاشر من رمضان", "الشرقية - بلبيس", "الشرقية - فاقوس", "الشرقية - منيا القمح", "الشرقية - أبو حماد", "الشرقية - ديرب نجم",
-            "الدقهلية - المنصورة", "الدقهلية - طلخا", "الدقهلية - ميت غمر", "الدقهلية - السنبلاوين", "الدقهلية - شربين", "الدقهلية - دكرنس", "الدقهلية - بلقاس",
-            "الغربية - طنطا", "الغربية - المحلة الكبرى", "الغربية - كفر الزيات", "الغربية - زفتى", "الغربية - بسيون", "الغربية - قطور", "الغربية - السنطة",
-            "المنوفية - شبين الكوم", "المنوفية - قويسنا", "المنوفية - أشمون", "المنوفية - منوف", "المنوفية - السادات", "المنوفية - الباجور", "المنوفية - بركة السبع",
-            "البحيرة - دمنهور", "البحيرة - كفر الدوار", "البحيرة - إيتاي البارود", "البحيرة - رشيد", "البحيرة - كوم حمادة", "البحيرة - أبو حمص", "البحيرة - حوش عيسى",
-            "كفر الشيخ - كفر الشيخ", "كفر الشيخ - دسوق", "كفر الشيخ - مطوبس", "كفر الشيخ - قلين", "كفر الشيخ - سيدي سالم", "كفر الشيخ - بلطيم",
-            "دمياط - دمياط", "دمياط - دمياط الجديدة", "دمياط - رأس البر", "دمياط - فارسكور", "دمياط - الزرقا",
-            "بور سعيد - حي الشرق", "بور سعيد - حي العرب", "بور سعيد - بور فؤاد", "بور سعيد - حي الزهور",
-            "الإسماعيلية - الإسماعيلية", "الإسماعيلية - فايد", "الإسماعيلية - القنطرة شرق", "الإسماعيلية - القنطرة غرب", "الإسماعيلية - التل الكبير",
-            "السويس - حي السويس", "السويس - حي الأربعين", "السويس - حي فيصل", "السويس - العين السخنة",
-            "الفيوم - الفيوم", "الفيوم - أبشواي", "الفيوم - إطسا", "الفيوم - سنورس", "الفيوم - طامية",
-            "بني سويف - بني سويف", "بني سويف - الواسطى", "بني سويف - ببا", "بني سويف - الفشن", "بني سويف - ناصر",
-            "المنيا - المنيا", "المنيا - مغاغة", "المنيا - ملوى", "المنيا - بني مزار", "المنيا - سمالوط", "المنيا - أبو قرقاص",
-            "أسيوط - أسيوط", "أسيوط - ديروط", "أسيوط - منفلوط", "أسيوط - القوصية", "أسيوط - أبو تيج", "أسيوط - صدفا",
-            "سوهاج - سوهاج", "سوهاج - طما", "سوهاج - جرجا", "سوهاج - أخميم", "سوهاج - المنشاة", "سوهاج - طهطا",
-            "قنا - قنا", "قنا - نجع حمادي", "قنا - دشنا", "قنا - قوص", "قنا - قفط", "قنا - أبو تشت",
-            "الأقصر - مدينة الأقصر", "الأقصر - إسنا", "الأقصر - أرمنت", "الأقصر - القرنة", "الأقصر - طيبة",
-            "أسوان - مدينة أسوان", "أسوان - كوم أمبو", "أسوان - إدفو", "أسوان - دراو", "أسوان - nصر النوبة",
-            "البحر الأحمر - الغردقة", "البحر الأحمر - الجونة", "البحر الأحمر - سفاجا", "البحر الأحمر - مرسى علم", "البحر الأحمر - القصير",
-            "مطروح - مرسى مطروح", "مطروح - الساحل الشمالي", "مطروح - سيوة", "مطروح - الضبعة", "مطروح - العلمين",
-            "الوادي الجديد - الخارجة", "الوادي الجديد - الداخلة", "الوادي الجديد - الفرافرة",
-            "شمال سيناء - العريش", "شمال سيناء - بئر العبد", "شمال سيناء - الشيخ زويد",
-            "جنوب سيناء - شرم الشيخ", "جنوب سيناء - دهب", "جنوب سيناء - طور سيناء", "جنوب سيناء - نويبع", "جنوب سيناء - رأس سدر"
-        ];
+        const egyptLocations = ["القاهرة - مدينة نصر", "القاهرة - التجمع الخامس", "القاهرة - مصر الجديدة", "القاهرة - المعادي", "القاهرة - الرحاب", "القاهرة - مدينتي", "القاهرة - الشروق", "القاهرة - العبور", "القاهرة - وسط البلد", "القاهرة - شبرا", "القاهرة - حلوان", "القاهرة - المقطم", "القاهرة - الزمالك", "القاهرة - عين شمس", "القاهرة - المطرية", "القاهرة - المرج", "القاهرة - السيدة زينب", "الجيزة - 6 أكتوبر", "الجيزة - الشيخ زايد", "الجيزة - الهرم", "الجيزة - فيصل", "الجيزة - المهندسين", "الجيزة - الدقي", "الجيزة - حدائق الأهرام", "الجيزة - العمرانية", "الجيزة - الوراق", "الجيزة - إمبابة", "الجيزة - بولاق الدكرور", "الجيزة - الحوامدية", "الجيزة - البدرشين", "الإسكندرية - سموحة", "الإسكندرية - ميامي", "الإسكندرية - سيدي بشر", "الإسكندرية - العجمي", "الإسكندرية - لوران", "الإسكندرية - جليم", "الإسكندرية - المعمورة", "الإسكندرية - محرم بك", "الإسكندرية - المنشية", "الإسكندرية - كينج مريوط", "الإسكندرية - العامرية"];
+
         window.toggleLocationModal = () => {
             const m = document.getElementById('location-modal');
             m.classList.toggle('hidden'); m.classList.toggle('flex');
@@ -468,7 +445,13 @@
         };
 
         if (user) {
-            document.getElementById('auth-section').innerHTML = `<a href="my-ads.html" class="text-xs font-black text-gray-500 hover:text-blue-600 px-3 transition-colors">إعلاناتي</a><a href="add-ad.html" class="bg-blue-600 text-white px-5 py-2.5 rounded-xl font-black text-xs shadow-md">+ بيع دلوقتي</a>`;
+            document.getElementById('auth-section').innerHTML = `
+                <div class="flex items-center gap-2 ml-4">
+                    <span class="text-[10px] font-black text-gray-400">أهلاً، <span class="text-blue-600">${user.name}</span></span>
+                </div>
+                <a href="my-ads.html" class="text-xs font-black text-gray-500 hover:text-blue-600 px-3 transition-colors">إعلاناتي</a>
+                <a href="add-ad.html" class="bg-blue-600 text-white px-5 py-2.5 rounded-xl font-black text-xs shadow-md">+ بيع دلوقتي</a>
+            `;
             document.getElementById('mobile-account-link').href = 'my-ads.html';
             listenToUnreadMessages();
         }
